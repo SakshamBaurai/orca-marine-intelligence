@@ -761,16 +761,18 @@ input:checked + .toggle-slider:before {
   bottom: 24px;
   left: 24px;
   font-size: 11px;
-  color: var(--text-faint);
+  color: #e2e8f0;
   font-family: var(--font-mono);
-  z-index: 15;
+  z-index: 99;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(2, 6, 17, 0.6);
-  padding: 6px 12px;
+  background: #070d1e !important;
+  padding: 7px 14px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 180, 216, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.95);
+  opacity: 1 !important;
 }
 
 /* Responsive adjustments */
