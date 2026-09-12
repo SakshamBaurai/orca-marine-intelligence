@@ -1,0 +1,99 @@
+# ORCA pipeline configuration.
+# Only keys you want to override need to be present; everything else falls back
+# to the defaults in orca/config.py. No coordinates or basin assumptions here.
+
+data:
+  # Point these at your files. source_parquet is what training/inference read.
+  source_csv: null
+  source_parquet: "orca_processed_ocean_data.parquet"
+  time_column: "time"
+  lat_column: "latitude"
+  lon_column: "longitude"
+  depth_column: "depth_bin"
+  time_format: "%Y-%m-%d"
+  surface_layer: "0-50m"        # set to null to keep all depth layers
+  raw_features: ["thetao", "so", "uo", "vo", "chl", "sla", "u10", "v10"]
+  chunk_rows: 250000
+  # Current prototype deployment: Arabian Sea / Indian Ocean study grid.
+  # Change only these four values to deploy the same pipeline to another basin.
+  lat_min: 8.25
+  lat_max: 21.75
+  lon_min: 65.25
+  lon_max: 77.0
+
+# A provider-neutral JSON boundary for current daily observations. Keep disabled
+# until a Copernicus/INCOIS/NOAA adapter endpoint and its credential are supplied.
+# column_map is canonical_ORCA_name: provider_response_field_name.
+live:
+  enabled: false
+  endpoint: null
+  records_path: null
+  column_map: {}
+  static_params: {}
+  date_param: "date"
+  lat_min_param: "lat_min"
+  lat_max_param: "lat_max"
+  lon_min_param: "lon_min"
+  lon_max_param: "lon_max"
+  api_key_env: null
+  api_key_header: "Authorization"
+  api_key_prefix: "Bearer "
+  timeout_seconds: 30
+  retry_attempts: 3
+  retry_backoff_seconds: 1
+  max_response_rows: 100000
+
+climatology:
+  cell_size_deg: 1.0            # coarsen for global grids, refine for dense regional data
+  temporal_resolution: "month" # "month" or "doy_window"
+  doy_window_days: 15
+  anomaly_vars: ["thetao", "so", "sla", "chl"]
+  log_vars: ["chl"]
+  min_cell_count: 30
+  band_size_deg: 5.0
+
+split:
+  train_end: null               # e.g. "2024-06-30" to pin an absolute cutoff
+  test_start: null
+  train_fraction: 0.70
+  test_fraction: 0.15
+  calibration_fraction: 0.15
+
+model:
+  n_estimators: 200
+  max_samples: 2048
+  max_features: 0.7
+  contamination: "auto"
+  random_state: 42
+  n_jobs: 1                     # -1 to use all cores on an unrestricted machine
+  train_pool_target: 200000
+
+calibration:
+  target_alert_rate: 0.01
+
+cv:
+  n_temporal_folds: 4
+  scheme: "expanding"
+  min_train_fraction: 0.3
+  spatial_blocking: false
+  n_spatial_blocks: 4
+  psi_warn_threshold: 0.25
+
+analytics:
+  enable: true
+
+events:
+  enable: false
+  eps_deg: 0.6
+  min_samples: 3
+  grid_spacing_deg: null        # inferred from data when null
+
+paths:
+  artifact_dir: "artifacts"
+  prediction_dir: "predictions_parquet"
+
+onnx:
+  enable: true
+  opset: 15
+
+seed: 42

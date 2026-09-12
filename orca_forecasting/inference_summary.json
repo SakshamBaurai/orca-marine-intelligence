@@ -1,0 +1,11 @@
+{
+  "source": "orca_processed_ocean_data.parquet",
+  "artifacts": "artifacts",
+  "output": "predictions.parquet",
+  "backend": "joblib",
+  "rows_scored": 2879631,
+  "alerts": 12397,
+  "alert_rate": 0.004305065475402925,
+  "threshold": -0.5916754627227783,
+  "parts_written": 12
+}

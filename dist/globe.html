@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Deep Ocean 3D Globe &amp; Health Explorer</title>
+<link rel="icon" href="data:,">
+<!-- Leaflet CSS -->
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<!-- CesiumJS CSS -->
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet"/>
+<!-- Google Fonts: Inter & JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Three.js (kept for compatibility but globe now uses Cesium) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- OrbitControls -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<!-- CesiumJS -->
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- ORCA Styles -->
+<link href="styles.css?v=2" rel="stylesheet"/>
+<!-- Override Cesium widget to fill the container and match dark theme -->
+<style>
+    #globe-canvas-container .cesium-viewer,
+    #globe-canvas-container .cesium-viewer-cesiumWidgetContainer,
+    #globe-canvas-container .cesium-widget,
+    #globe-canvas-container .cesium-widget canvas {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0; left: 0;
+    }
+    #globe-canvas-container .cesium-viewer-bottom { display: none !important; }
+    #globe-canvas-container .cesium-viewer-toolbar { display: none !important; }
+  </style>
+</head>
+<body>
+<!-- =========================================================
+       MAIN VIEWPORT
+       ========================================================= -->
+<div id="viewport-container">
+<!-- Three.js globe -->
+<div id="globe-canvas-container"></div>
+<!-- Leaflet 2D fallback -->
+<div id="map-2d-container"></div>
+</div>
+<!-- =========================================================
+       ORCA TOP HEADER
+       ========================================================= -->
+<header id="orca-top-header">
+<div class="header-brand">
+<svg class="brand-logo" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10"></circle>
+<path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"></path>
+</svg>
+<div class="brand-titles">
+<h1 class="brand-h1"><span class="brand-name">ORCA</span> <span class="live-badge">LIVE TELEMETRY</span></h1>
+<p>Marine Intelligence Assistant • <span id="header-station-name">Kochi (Kerala)</span></p>
+</div>
+</div>
+<!-- Statistics (from old globe.html) -->
+<div class="top-stats">
+<div class="stat-item">
+<span class="stat-label">Ocean Grid Nodes</span>
+<span class="stat-value">
+<span class="pulsing-dot"></span>
+<span id="total-nodes">568</span> NODES
+        </span>
+</div>
+<div class="stat-item">
+<span class="stat-label">Ocean Health Index</span>
+<span class="stat-value">
+<span class="health-badge" id="overall-health-badge">84 / 100 OPTIMAL</span>
+</span>
+</div>
+<div class="stat-item">
+<span class="stat-label">Avg Sea Temp</span>
+<span class="stat-value" id="avg-temp">28.9 °C</span>
+</div>
+<div class="stat-item">
+<span class="stat-label">Avg Dissolved O₂</span>
+<span class="stat-value" id="avg-do">5.2 mg/L</span>
+</div>
+</div>
+<!-- Actions (from old globe.html) -->
+<div class="top-actions">
+<button class="hud-btn mode-toggle-btn" id="btn-mode-toggle" title="Toggle between 3D Globe and 2D Leaflet Map">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14">
+<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+<line x1="8" x2="8" y1="2" y2="18"></line>
+<line x1="16" x2="16" y1="6" y2="22"></line>
+</svg>
+        Original 2D Map
+      </button>
+<button class="hud-btn" id="btn-reset-view" title="Focus camera on Arabian Sea">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14">
+<circle cx="12" cy="12" r="3"></circle>
+<path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
+</svg>
+        Center View
+      </button>
+<button class="hud-btn" id="btn-auto-rotate" title="Toggle globe auto-rotation">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14">
+<path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+</svg>
+        Orbit: Off
+      </button>
+<button class="hud-btn hud-btn-primary" id="btn-ask-orca" title="Open ORCA Marine Intelligence Command">
+  <span class="orca-btn-dot"></span>
+  <span class="orca-btn-text">ASK ORCA</span>
+</button>
+<button class="hud-btn" id="btn-data-key" title="Open Oceanographic Data Key &amp; Metric Legend">
+  <span style="font-size: 13px; margin-right: 3px;">ℹ️</span>
+  <span>DATA KEY</span>
+</button>
+<div id="orca-sea-conditions-indicator" class="orca-sea-indicator" title="Live Sea Conditions &amp; Operational Safety (Click for explainable breakdown)">
+  <div class="sea-ind-icon">🌊</div>
+  <div class="sea-ind-body">
+    <div class="sea-ind-row1">
+      <span class="sea-ind-title">SEA SAFETY</span>
+      <span class="sea-ind-tag" id="sea-condition-type">OBSERVED</span>
+      <span class="sea-ind-tag model" id="sea-level-tag">SLA: +8 cm</span>
+    </div>
+    <div class="sea-ind-status safe" id="sea-condition-status">SAFE / FAVORABLE</div>
+    <div class="sea-ind-sub" id="sea-condition-meta">Mumbai Port • 78/100</div>
+  </div>
+</div>
+</div>
+<div class="header-telemetry">
+<div class="telemetry-item">
+<div class="telemetry-label">Ocean Health Index</div>
+<div class="telemetry-val" id="head-mhi">-- / 100</div>
+</div>
+<div class="telemetry-item">
+<div class="telemetry-label">SST Anomaly</div>
+<div class="telemetry-val" id="head-sst-anom">-- °C</div>
+</div>
+<div class="telemetry-item">
+<div class="telemetry-label">Surface Current</div>
+<div class="telemetry-val" id="head-current">-- m/s</div>
+</div>
+<div class="telemetry-item">
+<div class="telemetry-label">Chlorophyll-a</div>
+<div class="telemetry-val" id="head-chl">--</div>
+</div>
+<div class="telemetry-item">
+<div class="telemetry-label">Sea Level Anom</div>
+<div class="telemetry-val" id="head-sla">+8 cm</div>
+</div>
+</div>
+</header>
+
+<!-- =========================================================
+     SEA SAFETY EXPLAINABILITY POPOVER
+     ========================================================= -->
+<div id="orca-sea-safety-popover" class="orca-popover-card" style="display: none;">
+  <div class="popover-header">
+    <div class="popover-title">
+      <span class="popover-icon">🌊</span>
+      <span>Sea Safety &amp; Condition Breakdown</span>
+    </div>
+    <button type="button" id="sea-safety-popover-close" class="popover-close">×</button>
+  </div>
+  <div class="popover-body">
+    <div class="popover-lead" id="popover-safety-lead">
+      Operational assessment for <strong>Mumbai Port</strong>: <span style="color: #34d399; font-weight: 700;">SAFE / FAVORABLE</span>
+    </div>
+    <div class="popover-metrics-grid">
+      <div class="popover-metric-box">
+        <span class="pop-lbl">Atmospheric Wind</span>
+        <span class="pop-val" id="pop-wind-speed">14 km/h</span>
+        <span class="pop-sub">Gentle breeze (Open-Meteo)</span>
+      </div>
+      <div class="popover-metric-box">
+        <span class="pop-lbl">Surface Swell</span>
+        <span class="pop-val" id="pop-sea-state">Slight Swell</span>
+        <span class="pop-sub">Smooth water surface</span>
+      </div>
+      <div class="popover-metric-box">
+        <span class="pop-lbl">Sea Level Anomaly</span>
+        <span class="pop-val" id="pop-sla-val">+8 cm</span>
+        <span class="pop-sub">Altimetric datum height</span>
+      </div>
+      <div class="popover-metric-box">
+        <span class="pop-lbl">Marine Health</span>
+        <span class="pop-val" id="pop-mhi-val">78 / 100</span>
+        <span class="pop-sub">Stable water column</span>
+      </div>
+    </div>
+    <div class="popover-note">
+      <strong>⚠️ Altimetric SLA Semantics:</strong> +8 cm indicates localized sea surface height elevation relative to the 20-year mean sea surface (MSS) altimetric reference datum (steric thermal expansion / eddy displacement). It is NOT an indicator of secular sea-level rise.
+    </div>
+    <div class="popover-advisory" id="popover-advisory">
+      <strong>Operational Advisory:</strong> Safe for all artisanal and motorized commercial fishing craft beyond territorial artisanal limits.
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     OCEANOGRAPHIC DATA KEY & LEGEND POPOVER
+     ========================================================= -->
+<div id="orca-data-key-popover" class="orca-popover-card" style="display: none;">
+  <div class="popover-header">
+    <div class="popover-title">
+      <span class="popover-icon">ℹ️</span>
+      <span>Oceanographic Data Key &amp; Architecture</span>
+    </div>
+    <button type="button" id="data-key-popover-close" class="popover-close">×</button>
+  </div>
+  <div class="popover-body">
+    <div class="data-key-section">
+      <h4>🌐 What are ORCA Grid Points?</h4>
+      <p>Each grid point is a discrete Copernicus Marine (CMEMS) numerical model sampling cell (~35 km / 0.333° resolution). They represent continuous observation nodes across the Indian EEZ—not all grid nodes are fishing spots.</p>
+    </div>
+    <div class="data-key-section">
+      <h4>🎯 3-Tier Potential Fishing Zone (PFZ) System</h4>
+      <div class="key-tier-item">
+        <span class="tier-pill tier-high">HIGH / FAVORABLE</span>
+        <span>Score ≥ 68, Health ≥ 42. Prominent cyan beacon. Optimal thermal window (26.5–29.2°C), active upwelling front, and high chlorophyll-a forage (&gt;0.5 mg/m³).</span>
+      </div>
+      <div class="key-tier-item">
+        <span class="tier-pill tier-moderate">MODERATE / POTENTIAL</span>
+        <span>Score ≥ 50, Health ≥ 32. Amber beacon. Favorable primary forage or thermal conditions with stable secondary parameters.</span>
+      </div>
+      <div class="key-tier-item">
+        <span class="tier-pill tier-low">LESS FAVORABLE</span>
+        <span>Score ≥ 38. Subtle slate marker with amber border. Viable for opportunistic operations; clicking displays specific limiting factors (e.g. low chlorophyll or thermal deviation).</span>
+      </div>
+    </div>
+    <div class="data-key-section">
+      <h4>🗺️ Map Lines &amp; Dotted Boundaries (What They Mean)</h4>
+      <ul class="data-key-param-list">
+        <li><strong style="color: #00f5d4;">Cyan Dashed Line (- - -)</strong>: <strong>12 NM Limit (~22.2 km)</strong> — Sovereign Territorial Waters Reserve reserved exclusively for traditional artisanal fishers. All recommended commercial PFZs are strictly positioned beyond this line.</li>
+        <li><strong style="color: #38bdf8;">Sky Blue Dashed Line (- - -)</strong>: <strong>Active Navigational Route</strong> — Direct navigational channel corridor plotted from your selected coastal departure port directly to the target favorable fishing spot.</li>
+        <li><strong style="color: #fbbf24;">Amber Solid Line (───)</strong>: <strong>Indian EEZ Operational Boundary</strong> — 200 Nautical Mile Exclusive Economic Zone baseline marking national maritime resource jurisdiction.</li>
+      </ul>
+    </div>
+    <div class="data-key-section">
+      <h4>📊 Core Parameters</h4>
+      <ul class="data-key-param-list">
+        <li><strong>SST (°C)</strong>: Sea Surface Temperature from Copernicus CMEMS physical forecast.</li>
+        <li><strong>SSTA (°C)</strong>: SST Anomaly relative to climatology (negative = active upwelling).</li>
+        <li><strong>Chl-a (mg/m³)</strong>: Chlorophyll-a from Sentinel-3 OLCI ocean color radiometry.</li>
+        <li><strong>SLA (cm)</strong>: Instantaneous Sea Level Anomaly from satellite radar altimetry relative to MSS datum.</li>
+        <li><strong>MHI (0–100)</strong>: Marine Health Index via Isolation Forest ecosystem anomaly detector.</li>
+        <li><strong>12 NM Limit (~22.2 km)</strong>: Territorial boundary reserved for artisanal fishers. Commercial PFZs are strictly filtered beyond 12 NM.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     OPERATIONAL SEA SAFETY & SWELL ADVISORY POPOVER
+     ========================================================= -->
+<div id="orca-sea-safety-popover" class="orca-popover-card" style="display: none;">
+  <div class="popover-header">
+    <div class="popover-title">
+      <span class="popover-icon">🌊</span>
+      <span>Sea Safety &amp; Swell Intelligence</span>
+    </div>
+    <button type="button" id="sea-safety-popover-close" class="popover-close">×</button>
+  </div>
+  <div class="popover-body">
+    <div class="popover-lead">
+      Operational safety assessment based on live satellite altimetry, ECMWF surface winds, and CMEMS sea-state models.
+    </div>
+    <div class="popover-metrics-grid">
+      <div class="popover-metric-box">
+        <span class="pop-lbl">Operational Status</span>
+        <span class="pop-val" id="pop-sea-status" style="color: #34d399;">SAFE / FAVORABLE</span>
+        <span class="pop-sub">Normal vessel operations</span>
+      </div>
+      <div class="popover-metric-box">
+        <span class="pop-lbl">Sea Level Anomaly</span>
+        <span class="pop-val" id="pop-sea-sla">+8.2 cm</span>
+        <span class="pop-sub">Altimetric datum (MSS)</span>
+      </div>
+      <div class="popover-metric-box">
+        <span class="pop-lbl">Significant Swell</span>
+        <span class="pop-val" id="pop-sea-wave">1.1 m</span>
+        <span class="pop-sub">Slight / Favorable</span>
+      </div>
+      <div class="popover-metric-box">
+        <span class="pop-lbl">Surface Wind</span>
+        <span class="pop-val" id="pop-sea-wind">11.4 kts</span>
+        <span class="pop-sub">Gentle Breeze (Beaufort 3)</span>
+      </div>
+    </div>
+    <div class="popover-note">
+      <strong>Sea Level Note:</strong> "+8 cm" is the instantaneous altimetric <em>Sea Level Anomaly (SLA)</em> relative to the 20-year Mean Sea Surface datum, driven by thermal expansion and mesoscale eddy circulation—not long-term sea-level rise.
+    </div>
+    <div class="popover-advisory" id="pop-sea-advisory">
+      ✓ Central Arabian Sea conditions are favorable for all artisanal and mechanized commercial craft. Maintain safe passage outside the 12 NM coastal baseline.
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+       ORCA AI RAG WIDGET
+       ========================================================= -->
+<aside class="hud-panel" id="left-panel">
+<div>
+<div class="panel-section-title">
+<span>Ocean Health Metric</span>
+<span class="section-small">SELECT DATA KEY</span>
+</div>
+<div class="metric-grid">
+<div class="metric-btn active" data-metric="health">
+<div class="metric-info">
+<span class="metric-dot health-dot"></span>
+<span>Overall Health Index</span>
+</div>
+<span class="metric-val-tag">Composite</span>
+</div>
+<div class="metric-btn" data-metric="oxygen">
+<div class="metric-info">
+<span class="metric-dot oxygen-dot"></span>
+<span>SST Anom (DO)</span>
+</div>
+<span class="metric-val-tag">mg/L</span>
+</div>
+<div class="metric-btn" data-metric="sst">
+<div class="metric-info">
+<span class="metric-dot sst-dot"></span>
+<span>Sea Surface Temp (SST)</span>
+</div>
+<span class="metric-val-tag">°C</span>
+</div>
+<div class="metric-btn" data-metric="ph">
+<div class="metric-info">
+<span class="metric-dot ph-dot"></span>
+<span>Ocean Acidity (pH)</span>
+</div>
+<span class="metric-val-tag">pH Scale</span>
+</div>
+<div class="metric-btn" data-metric="chlorophyll">
+<div class="metric-info">
+<span class="metric-dot chlorophyll-dot"></span>
+<span>Phytoplankton (Chl-a)</span>
+</div>
+<span class="metric-val-tag">mg/m³</span>
+</div>
+<div class="metric-btn" data-metric="salinity">
+<div class="metric-info">
+<span class="metric-dot salinity-dot"></span>
+<span>Surface Salinity</span>
+</div>
+<span class="metric-val-tag">PSU</span>
+</div>
+</div>
+</div>
+<!-- Coastal Port Weather (Open-Meteo Integration) -->
+<div style="margin-top: 15px; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+<div class="panel-section-title">
+<span>Coastal Port Weather</span>
+<span class="section-small">OPEN-METEO LIVE</span>
+</div>
+<select id="port-weather-select" class="hud-select" style="width: 100%; background: #0a1628; color: var(--accent-cyan); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 6px; font-size: 11px; margin-bottom: 8px; outline: none;">
+<option value="">Select Coastal Port...</option>
+<optgroup label="⭐ MAJOR WEST COAST PORTS">
+<option value="23.01,70.22,Kandla">🚢 Kandla (Deendayal Port, GJ)</option>
+<option value="22.74,69.71,Mundra">🚢 Mundra Port (Kutch, GJ)</option>
+<option value="21.64,69.61,Porbandar">🚢 Porbandar Port (Saurashtra, GJ)</option>
+<option value="20.91,70.37,Veraval">🚢 Veraval Port (Saurashtra, GJ)</option>
+<option value="20.91,71.50,Pipavav">🚢 Pipavav Port (APM Terminals, GJ)</option>
+<option value="21.10,72.64,Hazira">🚢 Hazira Port (Surat, GJ)</option>
+<option value="18.94,72.84,Mumbai">🚢 Mumbai Port (Maharashtra)</option>
+<option value="18.95,72.95,JNPT">🚢 JNPT (Nhava Sheva, MH)</option>
+<option value="15.41,73.80,Mormugao">🚢 Mormugao Port (Goa)</option>
+<option value="12.91,74.88,Mangaluru">🚢 New Mangalore Port (KA)</option>
+<option value="9.93,76.27,Kochi">🚢 Kochi Port (Kerala)</option>
+</optgroup>
+<optgroup label="📍 GUJARAT COASTLINE">
+<option value="23.24,68.71,Jakhau">⚓ Jakhau (Western Kutch)</option>
+<option value="22.83,69.36,Mandvi">⚓ Mandvi (Kutch Dhow Port)</option>
+<option value="22.96,70.45,Navlakhi">⚓ Navlakhi (Inner Gulf)</option>
+<option value="22.50,70.04,Bedi">⚓ Bedi (Jamnagar)</option>
+<option value="22.43,69.84,Sikka">⚓ Sikka (Reliance SPM)</option>
+<option value="22.31,69.60,Salaya">⚓ Salaya (Crude Terminal)</option>
+<option value="22.47,69.07,Okha">⚓ Okha (Dwarka)</option>
+<option value="21.12,70.11,Mangrol">⚓ Mangrol (Saurashtra)</option>
+<option value="20.87,71.37,Jafrabad">⚓ Jafrabad (Cement/Fish)</option>
+<option value="21.41,72.20,Alang">⚓ Alang (Ship Recycling)</option>
+<option value="21.78,72.18,Bhavnagar">⚓ Bhavnagar (Lock Gate)</option>
+<option value="21.70,72.53,Dahej">⚓ Dahej (LNG / Chemical)</option>
+<option value="20.40,72.83,Daman">⚓ Daman (Damanganga)</option>
+</optgroup>
+<optgroup label="📍 MAHARASHTRA / KONKAN">
+<option value="18.73,72.88,Alibaug">⚓ Alibaug (Mandwa)</option>
+<option value="18.28,72.98,Dighi">⚓ Dighi (Rajpuri Creek)</option>
+<option value="17.59,73.18,Dabhol">⚓ Dabhol (Vashishti)</option>
+<option value="17.30,73.21,Jaigad">⚓ Jaigad (Shastri River)</option>
+<option value="16.99,73.30,Ratnagiri">⚓ Ratnagiri (Mirya Bay)</option>
+<option value="16.56,73.33,Vijaydurg">⚓ Vijaydurg (Fort Port)</option>
+<option value="16.38,73.38,Devgad">⚓ Devgad (Natural Creek)</option>
+<option value="16.05,73.47,Malvan">⚓ Malvan (Sindhudurg)</option>
+</optgroup>
+<optgroup label="📍 GOA & KARNATAKA">
+<option value="15.50,73.83,Panaji">⚓ Panaji (Mandovi)</option>
+<option value="14.80,74.12,Karwar">⚓ Karwar (Baithkol/Naval)</option>
+<option value="14.52,74.35,Tadri">⚓ Tadri (Aghanashini)</option>
+<option value="14.28,74.44,Honnavar">⚓ Honnavar (Sharavathi)</option>
+<option value="13.98,74.55,Bhatkal">⚓ Bhatkal (Fish Harbour)</option>
+<option value="13.63,74.69,Kundapura">⚓ Kundapura (Gangolli)</option>
+<option value="13.35,74.70,Malpe">⚓ Malpe (Udupi Deep-Sea)</option>
+</optgroup>
+<optgroup label="📍 SOUTH & EAST COAST">
+<option value="8.89,76.59,Kollam">⚓ Kollam (Ashtamudi, KL)</option>
+<option value="8.52,76.94,Thiruvananthapuram">⚓ Vizhinjam (Trivandrum, KL)</option>
+<option value="8.76,78.13,Thoothukudi">⚓ Thoothukudi (VOC Port, TN)</option>
+<option value="13.08,80.27,Chennai">⚓ Chennai Port (TN)</option>
+<option value="16.99,82.25,Kakinada">⚓ Kakinada (AP)</option>
+<option value="17.69,83.22,Visakhapatnam">⚓ Visakhapatnam Port (AP)</option>
+<option value="20.27,86.67,Paradip">⚓ Paradip Port (Odisha)</option>
+</optgroup>
+</select>
+<div id="port-weather-info" style="display: none; background: rgba(10, 22, 40, 0.7); padding: 10px; border-radius: 4px; font-size: 11px; border: 1px solid #142a45;">
+<div id="weather-port-name" style="font-weight: bold; color: var(--accent-cyan); margin-bottom: 6px;"></div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+<span style="color: var(--text-muted);">Air Temperature:</span> <span id="weather-temp" style="color: #fff; font-weight: bold;">--</span>
+</div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+<span style="color: var(--text-muted);">Wind Speed (10m):</span> <span id="weather-wind" style="color: #fff; font-weight: bold;">--</span>
+</div>
+<div style="display: flex; justify-content: space-between;">
+<span style="color: var(--text-muted);">Relative Humidity:</span> <span id="weather-humidity" style="color: #fff; font-weight: bold;">--</span>
+</div>
+</div>
+</div>
+<!-- Health filter -->
+<div>
+<div class="panel-section-title">
+<span>Health Status Filter</span>
+</div>
+<div class="filter-list">
+<label>
+<input checked="" name="filter-status" type="radio" value="all"/>
+<span>All Monitoring Nodes</span>
+</label>
+<label>
+<input name="filter-status" type="radio" value="optimal"/>
+<span class="optimal-text">
+            Healthy / Optimal Only
+          </span>
+</label>
+<label>
+<input name="filter-status" type="radio" value="stressed"/>
+<span class="stressed-text">
+            Hypoxic / Stressed Pockets
+          </span>
+</label>
+</div>
+</div>
+</aside><aside class="hud-panel" id="right-panel">
+<div class="inspector-header">
+<div>
+<div class="station-title" id="inspector-name">
+          Arabian Sea Station #64
+        </div>
+<div class="station-subtitle" id="inspector-id">
+          AS-NODE-064
+        </div>
+</div>
+<div class="station-status-pill" id="inspector-status">
+        Optimal
+      </div>
+</div>
+<!-- Coordinates -->
+<div class="info-row">
+<span>Coordinates:</span>
+<span id="inspector-coords">
+        14.00°N, 71.00°E
+      </span>
+</div>
+<div class="info-row">
+<span>Bathymetry Depth:</span>
+<span class="accent-blue-text" id="inspector-depth">
+        2,840 m
+      </span>
+</div>
+<!-- Gauges -->
+<div class="gauges-list">
+<!-- SST Anom -->
+<div class="gauge-item">
+<div class="gauge-top">
+<span class="gauge-name">
+            SST Anomaly
+          </span>
+<span class="gauge-val" id="meter-thetao-anom-val">
+            +0.00 °C
+          </span>
+</div>
+<div class="gauge-bar-bg">
+<div class="gauge-bar-fill" id="meter-thetao-anom-fill" style="width: 50%;"></div>
+</div>
+</div>
+<!-- SST -->
+<div class="gauge-item">
+<div class="gauge-top">
+<span class="gauge-name">
+            Sea Surface Temp
+          </span>
+<span class="gauge-val" id="meter-temp-val">
+            28.2 °C
+          </span>
+</div>
+<div class="gauge-bar-bg">
+<div class="gauge-bar-fill" id="meter-temp-fill" style="width: 50%;"></div>
+</div>
+</div>
+<!-- Sea Level Anomaly -->
+<div class="gauge-item">
+<div class="gauge-top">
+<span class="gauge-name">
+            Sea Level Anom (SLA)
+          </span>
+<span class="gauge-val" id="meter-sla-anom-val">
+            0.00 m
+          </span>
+</div>
+<div class="gauge-bar-bg">
+<div class="gauge-bar-fill" id="meter-sla-anom-fill" style="width: 50%;"></div>
+</div>
+</div>
+<!-- Salinity -->
+<div class="gauge-item">
+<div class="gauge-top">
+<span class="gauge-name">
+            Salinity Anomaly
+          </span>
+<span class="gauge-val" id="meter-so-anom-val">
+            0.00 PSU
+          </span>
+</div>
+<div class="gauge-bar-bg">
+<div class="gauge-bar-fill" id="meter-so-anom-fill" style="width: 50%;"></div>
+</div>
+</div>
+<!-- Chlorophyll -->
+<div class="gauge-item">
+<div class="gauge-top">
+<span class="gauge-name">
+            Chlorophyll-a
+          </span>
+<span class="gauge-val" id="meter-log-chl-val">
+            0.20 mg/m³
+          </span>
+</div>
+<div class="gauge-bar-bg">
+<div class="gauge-bar-fill" id="meter-log-chl-fill" style="width: 50%;"></div>
+</div>
+</div>
+<div style="font-size: 10px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid var(--border-subtle); padding-top: 5px;">
+  ℹ️ DO &amp; pH: Unavailable from satellite array.
+</div>
+</div>
+<!-- Arabian Sea Marine Health Index Graph Monitor -->
+<div class="sparkline-box mhi-monitor-box">
+  <div class="sparkline-header mhi-header">
+    <div class="mhi-title-group">
+      <span class="mhi-icon">🌊</span>
+      <span class="mhi-title">ARABIAN SEA MHI</span>
+    </div>
+    <div class="mhi-meta-group">
+      <span class="mhi-avg-tag">AVG: <strong id="mhi-basin-avg">55.2</strong></span>
+      <span class="mhi-status-pill" id="mhi-basin-status">MODERATE</span>
+    </div>
+  </div>
+  <div class="mhi-graph-container" id="mhi-graph-container">
+    <canvas id="mhi-trend-canvas" class="mhi-trend-canvas" width="280" height="68"></canvas>
+    <div id="mhi-graph-tooltip" class="mhi-tooltip" style="display: none;"></div>
+  </div>
+  <div class="mhi-timeline-labels">
+    <span>D-3</span>
+    <span>D-2</span>
+    <span>D-1</span>
+    <span class="mhi-now-label">TODAY</span>
+    <span>D+1</span>
+    <span>D+2</span>
+    <span>D+3</span>
+  </div>
+  <svg class="sparkline-svg" id="inspector-sparkline" style="display:none;"></svg>
+</div>
+</aside><footer class="hud-panel" id="bottom-hud">
+<div class="bottom-station-nav" id="bottom-station-nav">
+  <div class="bottom-station-header">
+    <span class="pulse-icon"></span>
+    <span class="dock-label">PORT / STATION:</span>
+  </div>
+  <div class="station-select-wrapper">
+    <select id="station-select" class="station-select" aria-label="Select Coastal Station">
+      <optgroup label="⭐ MAJOR WEST COAST PORTS">
+        <option value="Kandla">🚢 Kandla (Deendayal Port, GJ)</option>
+        <option value="Mundra">🚢 Mundra Port (Kutch, GJ)</option>
+        <option value="Porbandar">🚢 Porbandar Port (Saurashtra, GJ)</option>
+        <option value="Veraval">🚢 Veraval Port (Saurashtra, GJ)</option>
+        <option value="Pipavav">🚢 Pipavav Port (APM Terminals, GJ)</option>
+        <option value="Hazira">🚢 Hazira Port (Surat, GJ)</option>
+        <option value="Mumbai">🚢 Mumbai Port (Maharashtra)</option>
+        <option value="JNPT">🚢 JNPT (Nhava Sheva, MH)</option>
+        <option value="Mormugao">🚢 Mormugao Port (Goa)</option>
+        <option value="Mangaluru">🚢 New Mangalore Port (KA)</option>
+        <option value="Kochi" selected>🚢 Kochi Port (Kerala)</option>
+      </optgroup>
+      <optgroup label="📍 GUJARAT COASTLINE">
+        <option value="Jakhau">⚓ Jakhau (Western Kutch)</option>
+        <option value="Mandvi">⚓ Mandvi (Kutch Dhow Port)</option>
+        <option value="Navlakhi">⚓ Navlakhi (Inner Gulf)</option>
+        <option value="Bedi">⚓ Bedi (Jamnagar)</option>
+        <option value="Sikka">⚓ Sikka (Reliance SPM)</option>
+        <option value="Salaya">⚓ Salaya (Crude Terminal)</option>
+        <option value="Okha">⚓ Okha (Dwarka)</option>
+        <option value="Mangrol">⚓ Mangrol (Saurashtra)</option>
+        <option value="Jafrabad">⚓ Jafrabad (Cement/Fish)</option>
+        <option value="Alang">⚓ Alang (Ship Recycling)</option>
+        <option value="Bhavnagar">⚓ Bhavnagar (Lock Gate)</option>
+        <option value="Dahej">⚓ Dahej (LNG / Chemical)</option>
+        <option value="Daman">⚓ Daman (Damanganga)</option>
+      </optgroup>
+      <optgroup label="📍 MAHARASHTRA / KONKAN">
+        <option value="Alibaug">⚓ Alibaug (Mandwa)</option>
+        <option value="Dighi">⚓ Dighi (Rajpuri Creek)</option>
+        <option value="Dabhol">⚓ Dabhol (Vashishti)</option>
+        <option value="Jaigad">⚓ Jaigad (Shastri River)</option>
+        <option value="Ratnagiri">⚓ Ratnagiri (Mirya Bay)</option>
+        <option value="Vijaydurg">⚓ Vijaydurg (Fort Port)</option>
+        <option value="Devgad">⚓ Devgad (Natural Creek)</option>
+        <option value="Malvan">⚓ Malvan (Sindhudurg)</option>
+      </optgroup>
+      <optgroup label="📍 GOA & KARNATAKA">
+        <option value="Panaji">⚓ Panaji (Mandovi)</option>
+        <option value="Karwar">⚓ Karwar (Baithkol/Naval)</option>
+        <option value="Tadri">⚓ Tadri (Aghanashini)</option>
+        <option value="Honnavar">⚓ Honnavar (Sharavathi)</option>
+        <option value="Bhatkal">⚓ Bhatkal (Fish Harbour)</option>
+        <option value="Kundapura">⚓ Kundapura (Gangolli)</option>
+        <option value="Malpe">⚓ Malpe (Udupi Deep-Sea)</option>
+      </optgroup>
+      <optgroup label="📍 SOUTH & EAST COAST">
+        <option value="Kollam">⚓ Kollam (Ashtamudi, KL)</option>
+        <option value="Thiruvananthapuram">⚓ Vizhinjam (Trivandrum, KL)</option>
+        <option value="Thoothukudi">⚓ Thoothukudi (VOC Port, TN)</option>
+        <option value="Chennai">⚓ Chennai Port (TN)</option>
+        <option value="Kakinada">⚓ Kakinada (AP)</option>
+        <option value="Visakhapatnam">⚓ Visakhapatnam Port (AP)</option>
+        <option value="Paradip">⚓ Paradip Port (Odisha)</option>
+      </optgroup>
+    </select>
+  </div>
+</div>
+<div class="bottom-hud-divider"></div>
+<div class="legend-block">
+<div class="legend-title" id="legend-title">
+        Ocean Health Index Key
+      </div>
+<div class="legend-gradient-wrapper">
+<div class="legend-gradient-bar" id="legend-gradient"></div>
+<div class="legend-ticks">
+<span id="legend-min">
+            20 / 100
+          </span>
+<span>
+            Normal
+          </span>
+<span id="legend-max">
+            95 / 100
+          </span>
+</div>
+</div>
+</div>
+<div class="legend-keys">
+<div class="key-item">
+<span class="key-indicator optimal-indicator"></span>
+<span>
+          Optimal / Healthy
+        </span>
+</div>
+<div class="key-item">
+<span class="key-indicator moderate-indicator"></span>
+<span>
+          Moderate / Monitored
+        </span>
+</div>
+<div class="key-item">
+<span class="key-indicator stressed-indicator"></span>
+<span>
+          Hypoxic / Stressed
+        </span>
+</div>
+</div>
+</footer><div id="floating-tooltip">
+<div class="tooltip-header" id="tooltip-header">
+      Station Node
+    </div>
+<div class="tooltip-body" id="tooltip-body">
+      Telemetry Loading...
+    </div>
+</div><div class="hud-panel orca-ai-drawer" id="orca-ai-widget">
+  <div class="ai-header" id="orca-ai-header">
+    <div class="ai-header-left">
+      <span class="ai-avatar-pulse">🐋</span>
+      <span class="ai-title">ORCA COGNITIVE AGENT</span>
+      <span class="rag-badge live-model-badge" id="ai-status-badge">TOOL-CALLING AI</span>
+    </div>
+    <div class="ai-header-actions">
+      <button type="button" class="ai-drawer-btn" id="ai-drawer-toggle" title="Collapse / Expand Agent Drawer">▼</button>
+    </div>
+  </div>
+  <div class="ai-drawer-body" id="ai-drawer-body">
+    <div class="ai-quick-chips" id="ai-quick-chips">
+      <button type="button" class="ai-chip" data-query="Where is the best fishing spot right now?">🎯 Best Fishing Spot</button>
+      <button type="button" class="ai-chip" data-query="What is the sea surface temperature at Kandla?">🌡️ Kandla SST</button>
+      <button type="button" class="ai-chip" data-query="Are there any active upwelling fronts?">🌊 Active Upwelling</button>
+      <button type="button" class="ai-chip" data-query="What is the marine health index here?">🩺 Marine Health</button>
+      <button type="button" class="ai-chip" data-query="Switch to 2D navigation map">🗺️ Switch to 2D</button>
+    </div>
+    <div class="ai-chat-history" id="ai-chat-history">
+      <div class="orca-message ai-bot-msg">
+        <div class="ai-sender"><span class="ai-avatar-mini">🐋</span> ORCA Tool-Calling Agent</div>
+        <div class="ai-content">
+          Operational. Connected to Copernicus CMEMS, Open-Meteo live atmospheric telemetry, and Isolation Forest ocean anomaly detectors. Ask me about ocean physics, thermal upwelling, potential fishing zones (PFZ), or coastal ports.
+        </div>
+      </div>
+    </div>
+    <form class="ai-chat-form" id="ai-chat-form">
+      <input autocomplete="off" id="ai-chat-input" placeholder="Ask about ocean physics, fishing spots, ports..." type="text"/>
+      <button type="submit" id="ai-submit-btn" title="Send query">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Floating launcher button when drawer is minimized -->
+<button type="button" id="orca-ai-launcher" class="orca-ai-launcher-btn" style="display: none;">
+  <span class="ai-launcher-dot"></span>⚡ ORCA AI
+</button>
+
+<!-- =========================================================
+     ORCA FULLSCREEN AI COMMAND WORKSPACE
+     ========================================================= -->
+<div id="orca-ai-workspace" class="orca-ai-workspace">
+  <div class="workspace-backdrop" id="workspace-backdrop"></div>
+  <div class="workspace-container">
+    <div class="workspace-header">
+      <div class="workspace-header-brand">
+        <div class="workspace-pill-badge"><span class="pulse-cyan-dot"></span> ORCA INTELLIGENCE COMMAND</div>
+        <h2 class="workspace-title">Marine Intelligence &amp; Autonomous Navigation Layer</h2>
+      </div>
+      <button type="button" class="workspace-close-btn" id="workspace-close-btn" title="Return to Globe (Esc)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Return to Globe</span>
+      </button>
+    </div>
+
+    <!-- Suggested Questions -->
+    <div class="workspace-prompts-section">
+      <div class="prompts-label">SUGGESTED COMMANDS</div>
+      <div class="workspace-prompt-chips" id="workspace-quick-chips">
+        <button type="button" class="prompt-chip" data-query="What are the best fishing spots from Mumbai?">🎯 Best fishing spots from Mumbai</button>
+        <button type="button" class="prompt-chip" data-query="Show nearby fishing zones">🐟 Find nearby fishing zones</button>
+        <button type="button" class="prompt-chip" data-query="Find the healthiest zone">🩺 Find the healthiest zone</button>
+        <button type="button" class="prompt-chip" data-query="Calculate distance from Mumbai Port">📏 Distance from Mumbai Port</button>
+        <button type="button" class="prompt-chip" data-query="What is the 12 NM regulatory boundary?">⚖️ 12 NM regulatory boundary</button>
+        <button type="button" class="prompt-chip" data-query="What is the weather in Mumbai?">🌦️ Mumbai coastal weather</button>
+      </div>
+    </div>
+
+    <!-- Message & Intelligence Card Stream -->
+    <div class="workspace-stream" id="workspace-stream">
+      <div class="workspace-msg workspace-msg-bot">
+        <div class="workspace-msg-sender">
+          <span class="workspace-avatar">🐋</span>
+          <span class="sender-name">ORCA Marine Intelligence</span>
+          <span class="verified-tag">12 NM BOUNDARY HARD FILTER ACTIVE</span>
+        </div>
+        <div class="workspace-msg-content">
+          Operational. Directly coupled to Copernicus Marine Service (CMEMS) numerical models, Sentinel-3 satellite ocean color arrays, and the Maritime Zones of India regulatory boundary.<br/><br/>
+          Ask natural-language queries about fishing grounds, departure routes, coastal ports, or marine ecosystem health.
+        </div>
+      </div>
+    </div>
+
+    <!-- Contextual Loading Progress State -->
+    <div class="workspace-progress" id="workspace-progress" style="display: none;">
+      <div class="workspace-progress-track"><div class="workspace-progress-bar" id="workspace-progress-bar"></div></div>
+      <div class="workspace-progress-status" id="workspace-progress-status">ORCA is analyzing marine conditions...</div>
+    </div>
+
+    <!-- Command Input Bar -->
+    <form class="workspace-form" id="workspace-form">
+      <div class="workspace-input-row">
+        <input type="text" id="workspace-query-input" autocomplete="off" placeholder="What would you like to know? e.g. Where should I fish from Mumbai?" />
+        <button type="submit" id="workspace-submit" title="Send query to ORCA">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+      <div class="workspace-form-footer">
+        <label class="toggle-globe-label" title="When enabled, geographic results immediately update 3D camera and route">
+          <input type="checkbox" id="toggle-show-globe" checked />
+          <span class="custom-chk"></span>
+          <span>Show result on Globe</span>
+        </label>
+        <div class="workspace-disclaimer">Zero hallucinations • Copernicus CMEMS physical forecast • 12 NM regulated</div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================
+     SHOW RESULT ON GLOBE REQUIRED MODAL
+     ========================================================= -->
+<div id="orca-globe-gate-modal" class="orca-modal-backdrop" style="display: none;">
+  <div class="orca-modal-panel">
+    <div class="orca-modal-header">
+      <div class="orca-modal-title">
+        <span class="orca-modal-icon">🌐</span>
+        <span>Enable Globe Navigation</span>
+      </div>
+      <button type="button" id="orca-gate-modal-close" class="orca-modal-close">×</button>
+    </div>
+    <div class="orca-modal-body">
+      <p class="orca-modal-text">
+        To navigate to this fishing zone, plot sea routes, and view real-time 3D telemetry, please enable the <strong>"Show result on Globe"</strong> option.
+      </p>
+      <div class="orca-gate-checkbox-prompt">
+        <label class="toggle-globe-label">
+          <input type="checkbox" id="gate-confirm-checkbox" />
+          <span>Enable "Show result on Globe"</span>
+        </label>
+      </div>
+    </div>
+    <div class="orca-modal-footer">
+      <button type="button" id="orca-gate-cancel-btn" class="orca-modal-btn orca-btn-secondary">Cancel</button>
+      <button type="button" id="orca-gate-proceed-btn" class="orca-modal-btn orca-btn-primary">Enable &amp; Proceed</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     SELECTED POINT & DEPARTURE NAVIGATION INSPECTOR
+     ========================================================= -->
+<div id="orca-departure-modal" class="orca-modal-backdrop" style="display: none;">
+  <div class="orca-modal-panel orca-departure-panel">
+    <div class="orca-modal-header">
+      <div class="orca-modal-title">
+        <span class="orca-modal-icon">⚓</span>
+        <span>Selected Zone &amp; Navigation Inspector</span>
+      </div>
+      <button type="button" id="orca-departure-modal-close" class="orca-modal-close" title="Close dialog">×</button>
+    </div>
+    <div class="orca-modal-body">
+      <div class="departure-target-summary">
+        <div class="departure-spot-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="departure-spot-badge" id="dep-spot-name">Target Zone 01</span>
+            <span class="tier-badge tier-high" id="dep-spot-tier">HIGH / FAVORABLE</span>
+          </div>
+          <span class="departure-spot-coords" id="dep-spot-coords">19.45°N, 71.85°E</span>
+        </div>
+        <div class="insp-explainer-banner">
+          <span>ℹ️ Discrete CMEMS model sampling cell (~35 km resolution) measuring authentic physical oceanography.</span>
+        </div>
+        <div class="departure-spot-chips">
+          <span class="dep-chip" id="dep-spot-health">Health: 85/100</span>
+          <span class="dep-chip" id="dep-spot-sst">SST: 27.8°C</span>
+          <span class="dep-chip" id="dep-spot-chl">Chl-a: 2.1 mg/m³</span>
+          <span class="dep-chip" id="dep-spot-sal">Sal: 35.5 PSU</span>
+          <span class="dep-chip" id="dep-spot-sla">SLA: +8 cm</span>
+          <span class="dep-chip dep-chip-safe" id="dep-spot-reg">✓ 12 NM Compliant</span>
+        </div>
+      </div>
+
+      <!-- Suitability / Limiting Factors Box -->
+      <div class="insp-rationale-box" id="dep-spot-rationale-box">
+        <div class="insp-rationale-title" id="dep-rationale-title">Suitability Rationale</div>
+        <ul class="insp-rationale-list" id="dep-rationale-list">
+          <li>Optimal thermal sweet spot (27.8°C)</li>
+        </ul>
+      </div>
+
+      <div class="departure-select-group">
+        <label for="departure-port-select" class="departure-label">
+          <span>Departure Port:</span>
+          <span class="dep-nearest-tag" id="dep-nearest-tag">Nearest Detected</span>
+        </label>
+        <select id="departure-port-select" class="departure-select"></select>
+      </div>
+
+      <div class="departure-metrics-grid">
+        <div class="dep-metric-box">
+          <span class="dep-metric-label">Straight Line</span>
+          <span class="dep-metric-val" id="dep-geodesic-dist">-- NM</span>
+          <span class="dep-metric-sub" id="dep-geodesic-km">(-- km)</span>
+        </div>
+        <div class="dep-metric-box">
+          <span class="dep-metric-label">Nav Channel</span>
+          <span class="dep-metric-val" id="dep-channel-dist">-- NM</span>
+          <span class="dep-metric-sub" id="dep-channel-km">(-- km)</span>
+        </div>
+        <div class="dep-metric-box">
+          <span class="dep-metric-label">Est. Transit</span>
+          <span class="dep-metric-val" id="dep-transit-time">--</span>
+          <span class="dep-metric-sub">@ 10 kts cruise</span>
+        </div>
+        <div class="dep-metric-box">
+          <span class="dep-metric-label">Initial Bearing</span>
+          <span class="dep-metric-val" id="dep-bearing">--°</span>
+          <span class="dep-metric-sub" id="dep-cardinal-dir">--</span>
+        </div>
+      </div>
+
+      <div class="departure-note" id="dep-route-note">
+        Navigational route departs seaward and strictly respects the 12 NM territorial limit.
+      </div>
+    </div>
+    <div class="orca-modal-footer">
+      <button type="button" id="orca-departure-ask-btn" class="orca-modal-btn orca-btn-secondary">Ask ORCA</button>
+      <button type="button" id="orca-departure-cancel-btn" class="orca-modal-btn orca-btn-secondary">Close</button>
+      <button type="button" id="orca-departure-confirm-btn" class="orca-modal-btn orca-btn-primary">Plot Route &amp; Take Me There</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MAP SYMBOLOGY & FISHING ZONES KEY (PERMANENT HUD DOCK)
+     ========================================================= -->
+<div id="map-symbology-key" class="map-symbology-key">
+  <div class="symbology-header">
+    <div class="symbology-title-wrap">
+      <span class="symbology-badge">LEGEND</span>
+      <span class="symbology-title">Map Keys &amp; Spot Classification</span>
+    </div>
+    <button type="button" id="symbology-toggle-btn" class="symbology-toggle-btn" title="Toggle Legend Details">−</button>
+  </div>
+  <div class="symbology-content" id="symbology-content">
+    <div class="symbology-section">
+      <div class="sym-section-label">MAP LINES (WHAT DOTTED LINES MEAN)</div>
+      <div class="sym-row">
+        <span class="sym-line-sample sym-line-12nm"></span>
+        <span class="sym-desc"><b>Cyan Dashed (- - -)</b>: <b>12 NM Limit (~22.2 km)</b> — Territorial Waters Reserve for traditional artisanal fishers. Favorable commercial PFZs strictly beyond.</span>
+      </div>
+      <div class="sym-row">
+        <span class="sym-line-sample sym-line-route"></span>
+        <span class="sym-desc"><b>Sky Blue Dashed (- - -)</b>: <b>Active Navigational Route</b> — Direct transit channel from chosen coastal departure port to favorable fishing spot.</span>
+      </div>
+      <div class="sym-row">
+        <span class="sym-line-sample sym-line-eez"></span>
+        <span class="sym-desc"><b>Amber Solid (───)</b>: <b>Indian EEZ Boundary</b> — 200 Nautical Mile Exclusive Economic Zone perimeter.</span>
+      </div>
+    </div>
+    <div class="symbology-section">
+      <div class="sym-section-label">FISHING SPOTS (COLOR CODED)</div>
+      <div class="sym-row">
+        <span class="sym-dot-sample sym-dot-high"></span>
+        <span class="sym-desc"><b style="color: #00f5d4;">Cyan Beacon (●)</b>: <b>High / Favorable PFZ</b> (Score &ge; 68, Health &ge; 42 — peak thermal envelope, upwelling &amp; high Chl-a).</span>
+      </div>
+      <div class="sym-row">
+        <span class="sym-dot-sample sym-dot-mod"></span>
+        <span class="sym-desc"><b style="color: #fbbf24;">Amber Beacon (●)</b>: <b>Moderate / Potential PFZ</b> (Score &ge; 50, Health &ge; 32 — favorable secondary forage &amp; thermal conditions).</span>
+      </div>
+      <div class="sym-row">
+        <span class="sym-dot-sample sym-dot-low"></span>
+        <span class="sym-desc"><b style="color: #94a3b8;">Slate Ring (◎)</b>: <b>Less Favorable PFZ</b> (Score &ge; 38 — constrained zone; click to view specific limiting factors).</span>
+      </div>
+      <div class="sym-row">
+        <span class="sym-dot-sample sym-dot-node"></span>
+        <span class="sym-desc"><b style="color: #64748b;">Small Dim Node (·)</b>: <b>Environmental Sampling Cell</b> (~35 km CMEMS continuous monitoring node; not a fishing spot).</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+       NAVIGATION HINT
+       ========================================================= -->
+<div id="nav-hint">
+<svg fill="none" height="12" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="12">
+<circle cx="12" cy="12" r="10"></circle>
+<polygon points="12 8 8 12 16 12 12 8"></polygon>
+</svg>
+
+    DRAG TO ROTATE • SCROLL TO ZOOM • CLICK BEACON TO INSPECT
+
+  </div>
+<!-- =========================================================
+       DATA + APPLICATION
+       ========================================================= -->
+<script src="ocean_data.js?v=3"></script>
+<script src="cesium-globe.js?v=4"></script>
+<script src="app.js?v=6"></script>
+<script src="orca-live-bridge.js?v=2"></script>
+<script src="orca-agent.js?v=1"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const select = document.getElementById("port-weather-select");
+      const infoBox = document.getElementById("port-weather-info");
+      const elName = document.getElementById("weather-port-name");
+      const elTemp = document.getElementById("weather-temp");
+      const elWind = document.getElementById("weather-wind");
+      const elHum = document.getElementById("weather-humidity");
+
+      if (select) {
+        select.addEventListener("change", async (e) => {
+          const val = e.target.value;
+          if (!val) return;
+
+          const [lat, lon, name] = val.split(",");
+          
+          elName.textContent = `Loading ${name}...`;
+          elTemp.textContent = "--";
+          elWind.textContent = "--";
+          elHum.textContent = "--";
+          infoBox.style.display = "block";
+
+          try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,relative_humidity_2m`;
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            if (data && data.current) {
+              elName.textContent = name + " Live Weather";
+              elTemp.textContent = data.current.temperature_2m + " °C";
+              elWind.textContent = data.current.wind_speed_10m + " km/h";
+              elHum.textContent = data.current.relative_humidity_2m + " %";
+            } else {
+              elName.textContent = "Error fetching data";
+            }
+          } catch (err) {
+            console.error(err);
+            elName.textContent = "Network Error";
+          }
+        });
+      }
+
+      // Map Symbology & Legend Minimizer Handler
+      const symToggleBtn = document.getElementById("symbology-toggle-btn");
+      const symCard = document.getElementById("map-symbology-key");
+      const symContent = document.getElementById("symbology-content");
+      if (symToggleBtn && symCard) {
+        symToggleBtn.addEventListener("click", () => {
+          const isCollapsed = symCard.classList.toggle("collapsed");
+          symToggleBtn.textContent = isCollapsed ? "+" : "−";
+          symToggleBtn.title = isCollapsed ? "Expand Legend Details" : "Minimize Legend Details";
+          if (symContent) {
+            symContent.style.display = isCollapsed ? "none" : "block";
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

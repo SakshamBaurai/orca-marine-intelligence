@@ -1,0 +1,23 @@
+# Byte-compiled / caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Artifacts & data (do not commit large binaries)
+artifacts/
+predictions_parquet/
+*.parquet
+*.joblib
+*.onnx
+run_manifest.json
+
+# OS
+.DS_Store
+Thumbs.db

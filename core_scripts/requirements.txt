@@ -1,0 +1,11 @@
+streamlit
+streamlit-folium
+folium
+pandas
+pyarrow
+numpy
+scikit-learn
+joblib
+copernicusmarine
+xarray
+netcdf4

@@ -1,0 +1,12 @@
+{
+  "name": "orca-frontend",
+  "private": true,
+  "scripts": {
+    "dev": "npx --yes serve -l 5500 .",
+    "start": "npx --yes serve -l 5500 .",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "playwright": "^1.63.0"
+  }
+}

@@ -1,0 +1,4 @@
+[console_scripts]
+orca-convert = scripts.convert_csv_to_parquet:main
+orca-infer = scripts.run_inference:main
+orca-train = scripts.run_training:main

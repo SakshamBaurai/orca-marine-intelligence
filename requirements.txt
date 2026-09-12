@@ -1,0 +1,30 @@
+# ==============================================================================
+# Project ORCA — Unified Master Dependencies
+# ==============================================================================
+
+# Core Numerical & Machine Learning
+numpy>=1.24,<3.0
+pandas>=2.0,<3.0
+pyarrow>=12.0
+scikit-learn>=1.3,<2.0
+joblib>=1.3
+PyYAML>=6.0
+
+# Copernicus Marine API & Ocean Physics
+copernicusmarine
+xarray
+netCDF4
+
+# FastAPI Microservice & Serving
+fastapi>=0.104
+uvicorn[standard]>=0.24
+pydantic>=2.0
+
+# Streamlit Diagnostic Dashboard & Folium Geospatial Map
+streamlit
+streamlit-folium
+folium>=0.15
+
+# Dev & Automated Testing
+pytest>=7.4
+httpx>=0.25

@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+</head>
+<body>
+  <div id="cesiumContainer" style="width: 500px; height: 500px;"></div>
+  <script>
+    try {
+      const viewer = new Cesium.Viewer("cesiumContainer", {
+        imageryProvider: new Cesium.OpenStreetMapImageryProvider({
+          url: "https://tile.openstreetmap.org/",
+        }),
+      });
+      console.log("Success!");
+    } catch(e) {
+      console.error(e.message);
+      document.body.innerHTML += "<h2>Error: " + e.message + "</h2>";
+    }
+  </script>
+</body>
+</html>
