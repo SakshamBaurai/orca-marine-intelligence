@@ -2174,24 +2174,15 @@
 
 
     /*
-     * Esri Ocean Basemap & Reference (GEBCO / NOAA Ocean Bathymetry & Place Names)
+     * CartoDB Dark Matter (matching 3D Globe dark basemap)
      */
     L.tileLayer(
-      "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}",
+      "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=cb1_3he2_1_f384df18951386690f3fe38c",
       {
-        minZoom: 1,
-        maxZoom: 13,
+        minZoom: 2,
+        maxZoom: 18,
         attribution:
-          'Ocean basemap &copy; <a href="https://www.esri.com">Esri</a>, GEBCO, NOAA, National Geographic, Garmin, HERE, Geonames.org'
-      }
-    ).addTo(leafletMap);
-
-    L.tileLayer(
-      "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}",
-      {
-        minZoom: 1,
-        maxZoom: 13,
-        attribution: 'place names &copy; Esri'
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
       }
     ).addTo(leafletMap);
     window.leafletMap = leafletMap;
