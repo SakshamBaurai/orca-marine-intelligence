@@ -2153,17 +2153,24 @@
       L.map(
         "map-2d-container",
         {
-
           center: center,
-
           zoom: zoom,
-
           zoomControl: true,
-
-          preferCanvas: true
-
+          preferCanvas: true,
+          scrollWheelZoom: true,
+          wheelPxPerZoomLevel: 50,
+          wheelDebounceTime: 30
         }
       );
+
+    const map2dEl = document.getElementById("map-2d-container");
+    if (map2dEl) {
+      map2dEl.addEventListener("wheel", (e) => {
+        if (e.ctrlKey) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    }
 
 
     /*

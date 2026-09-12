@@ -205,6 +205,63 @@ viewer = new Cesium.Viewer(container, {
       camCtrl.enableTilt = true;
       camCtrl.enableLook = true;
 
+      // Enable laptop touchpad pinch-to-zoom & modifier combinations in Cesium
+      camCtrl.zoomEventTypes = [
+        Cesium.CameraEventType.RIGHT_DRAG,
+        Cesium.CameraEventType.WHEEL,
+        Cesium.CameraEventType.PINCH,
+        {
+          eventType: Cesium.CameraEventType.WHEEL,
+          modifier: Cesium.KeyboardEventModifier.CTRL
+        },
+        {
+          eventType: Cesium.CameraEventType.PINCH,
+          modifier: Cesium.KeyboardEventModifier.CTRL
+        }
+      ];
+
+      // Laptop Precision Touchpad smooth zoom handler (two-finger scroll & pinch-to-zoom)
+      const globeContainerEl = document.getElementById("globe-canvas-container") || container;
+      if (globeContainerEl) {
+        globeContainerEl.addEventListener("wheel", (e) => {
+          // Prevent browser from zooming the entire page on laptop touchpad pinches
+          if (e.ctrlKey) {
+            e.preventDefault();
+          }
+
+          // Detect touchpad gestures:
+          // 1. Touchpad pinch gesture: e.ctrlKey === true
+          // 2. Touchpad two-finger scroll: pixel mode (deltaMode === 0) with small increments (< 60)
+          const isPinch = e.ctrlKey;
+          const isTouchpadScroll = (e.deltaMode === 0 && Math.abs(e.deltaY) > 0 && Math.abs(e.deltaY) < 60);
+
+          if (isPinch || isTouchpadScroll) {
+            e.preventDefault();
+
+            const camera = viewer.camera;
+            if (!camera) return;
+
+            const carto = camera.positionCartographic;
+            const altitude = carto ? Math.max(carto.height, 500) : 5000000;
+
+            const delta = e.deltaY;
+            if (delta === 0) return;
+
+            // Adaptive sensitivity scaled to camera altitude
+            const sensitivity = isPinch ? 0.005 : 0.0028;
+            const step = altitude * Math.min(Math.max(Math.abs(delta) * sensitivity, 0.012), 0.12);
+
+            if (delta < 0) {
+              camera.zoomIn(step);
+            } else {
+              camera.zoomOut(step);
+            }
+
+            viewer.scene.requestRender();
+          }
+        }, { passive: false });
+      }
+
       // Camera interaction logging to track grid stability
       viewer.camera.moveStart.addEventListener(() => {
         console.log("[ORCA GRID]\nCamera interaction started");
