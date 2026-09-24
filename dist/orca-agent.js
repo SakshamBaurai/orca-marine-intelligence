@@ -494,17 +494,17 @@
     if (depSpotName) depSpotName.textContent = spotName;
     if (depSpotCoords) depSpotCoords.textContent = `${spot.lat.toFixed(2)}°N, ${spot.lon.toFixed(2)}°E`;
     const healthVal = spot.healthScore != null ? Math.round(spot.healthScore) : (spot.mhi != null ? Math.round(spot.mhi) : 85);
-    if (depSpotHealth) depSpotHealth.textContent = `Health: ${healthVal}/100`;
-    if (depSpotSst) depSpotSst.textContent = `SST: ${spot.sst != null ? spot.sst.toFixed(1) : '27.5'}°C`;
+    if (depSpotHealth) depSpotHealth.textContent = `Ocean Health: ${healthVal}/100`;
+    if (depSpotSst) depSpotSst.textContent = `Water Temp: ${spot.sst != null ? spot.sst.toFixed(1) : '27.5'}°C`;
     const chlVal = spot.chlorophyll != null ? spot.chlorophyll : (spot.chl != null ? spot.chl : 2.10);
-    if (depSpotChl) depSpotChl.textContent = `Chl-a: ${chlVal.toFixed(2)} mg/m³`;
+    if (depSpotChl) depSpotChl.textContent = `Fish Food: ${chlVal.toFixed(2)} mg/m³`;
     const salVal = spot.salinity != null ? spot.salinity : (spot.sal != null ? spot.sal : 35.4);
-    if (depSpotSal) depSpotSal.textContent = `Sal: ${salVal.toFixed(1)} PSU`;
+    if (depSpotSal) depSpotSal.textContent = `Salt Level: ${salVal.toFixed(1)} PSU`;
 
     // Sea Level Anomaly
-    const slaCm = spot.sla_cm != null ? (spot.sla_cm > 0 ? `+${spot.sla_cm}` : `${spot.sla_cm}`) : (spot.sla != null ? ((spot.sla > 0 ? '+' : '') + Math.round(spot.sla * 100)) : '+8');
-    if (depSpotSla) depSpotSla.textContent = `SLA: ${slaCm} cm`;
-    if (depSpotReg) depSpotReg.textContent = "✓ 12 NM Compliant";
+    const slaCm = spot.sla_cm != null ? (spot.sla_cm > 0 ? `+${spot.sla_cm}` : `${spot.sla_cm}`) : (spot.sla != null ? ((spot.sla > 0 ? '+' : '') + Math.round(spot.sla * 100)) : '+6');
+    if (depSpotSla) depSpotSla.textContent = `Sea Level: Normal (${slaCm} cm)`;
+    if (depSpotReg) depSpotReg.textContent = "✓ Safe Beyond 12 NM Small Boat Zone";
 
     // Determine Tier & Badge
     let tier = spot.fishing_tier || spot.tier;

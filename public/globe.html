@@ -23,7 +23,7 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!-- ORCA Styles -->
-<link href="styles.css?v=3" rel="stylesheet"/>
+<link href="styles.css?v=4" rel="stylesheet"/>
 <!-- Override Cesium widget to fill the container and match dark theme -->
 <style>
     #globe-canvas-container .cesium-viewer,
@@ -119,85 +119,85 @@
   <span style="font-size: 13px; margin-right: 3px;">ℹ️</span>
   <span>DATA KEY</span>
 </button>
-<div id="orca-sea-conditions-indicator" class="orca-sea-indicator" title="Live Sea Conditions &amp; Operational Safety (Click for explainable breakdown)">
+<div id="orca-sea-conditions-indicator" class="orca-sea-indicator" title="Live Port Sea Safety &amp; Weather (Click for details)">
   <div class="sea-ind-icon">🌊</div>
   <div class="sea-ind-body">
     <div class="sea-ind-row1">
       <span class="sea-ind-title">SEA SAFETY</span>
-      <span class="sea-ind-tag" id="sea-condition-type">OBSERVED</span>
-      <span class="sea-ind-tag model" id="sea-level-tag">SLA: +8 cm</span>
+      <span class="sea-ind-tag" id="sea-condition-type">LIVE</span>
+      <span class="sea-ind-tag model" id="sea-level-tag">Sea Level: Normal (+6 cm)</span>
     </div>
-    <div class="sea-ind-status safe" id="sea-condition-status">SAFE / FAVORABLE</div>
-    <div class="sea-ind-sub" id="sea-condition-meta">Mumbai Port • 78/100</div>
+    <div class="sea-ind-status safe" id="sea-condition-status">SAFE / CALM WATERS</div>
+    <div class="sea-ind-sub" id="sea-condition-meta">Kochi Port • 88/100 • 12 km/h</div>
   </div>
 </div>
 </div>
 <div class="header-telemetry">
 <div class="telemetry-item">
-<div class="telemetry-label">Ocean Health Index</div>
+<div class="telemetry-label">Ocean Health (Fish Activity)</div>
 <div class="telemetry-val" id="head-mhi">-- / 100</div>
 </div>
 <div class="telemetry-item">
-<div class="telemetry-label">SST Anomaly</div>
+<div class="telemetry-label">Water Temp Change (SST)</div>
 <div class="telemetry-val" id="head-sst-anom">-- °C</div>
 </div>
 <div class="telemetry-item">
-<div class="telemetry-label">Surface Current</div>
+<div class="telemetry-label">Water Current Speed</div>
 <div class="telemetry-val" id="head-current">-- m/s</div>
 </div>
 <div class="telemetry-item">
-<div class="telemetry-label">Chlorophyll-a</div>
+<div class="telemetry-label">Fish Food (Plankton)</div>
 <div class="telemetry-val" id="head-chl">--</div>
 </div>
 <div class="telemetry-item">
-<div class="telemetry-label">Sea Level Anom</div>
-<div class="telemetry-val" id="head-sla">+8 cm</div>
+<div class="telemetry-label">Sea Level &amp; Swell (SLA)</div>
+<div class="telemetry-val" id="head-sla">+6 cm</div>
 </div>
 </div>
 </header>
 
 <!-- =========================================================
-     SEA SAFETY EXPLAINABILITY POPOVER
+     OPERATIONAL SEA SAFETY & HARBOUR WEATHER POPOVER
      ========================================================= -->
 <div id="orca-sea-safety-popover" class="orca-popover-card" style="display: none;">
   <div class="popover-header">
     <div class="popover-title">
       <span class="popover-icon">🌊</span>
-      <span>Sea Safety &amp; Condition Breakdown</span>
+      <span>Port Sea Safety &amp; Fishing Weather</span>
     </div>
     <button type="button" id="sea-safety-popover-close" class="popover-close">×</button>
   </div>
   <div class="popover-body">
     <div class="popover-lead" id="popover-safety-lead">
-      Operational assessment for <strong>Mumbai Port</strong>: <span style="color: #34d399; font-weight: 700;">SAFE / FAVORABLE</span>
+      Operational assessment for <strong>Kochi Port</strong>: <span style="color: #34d399; font-weight: 700;">SAFE / CALM WATERS</span>
     </div>
     <div class="popover-metrics-grid">
       <div class="popover-metric-box">
         <span class="pop-lbl">Atmospheric Wind</span>
-        <span class="pop-val" id="pop-wind-speed">14 km/h</span>
-        <span class="pop-sub">Gentle breeze (Open-Meteo)</span>
+        <span class="pop-val" id="pop-wind-speed">12 km/h</span>
+        <span class="pop-sub">Gentle breeze (Safe for small boats)</span>
       </div>
       <div class="popover-metric-box">
-        <span class="pop-lbl">Surface Swell</span>
-        <span class="pop-val" id="pop-sea-state">Slight Swell</span>
+        <span class="pop-lbl">Surface Swell / Waves</span>
+        <span class="pop-val" id="pop-sea-state">Calm Water (0.5m)</span>
         <span class="pop-sub">Smooth water surface</span>
       </div>
       <div class="popover-metric-box">
-        <span class="pop-lbl">Sea Level Anomaly</span>
-        <span class="pop-val" id="pop-sla-val">+8 cm</span>
-        <span class="pop-sub">Altimetric datum height</span>
+        <span class="pop-lbl">Sea Level Variation</span>
+        <span class="pop-val" id="pop-sla-val">+6 cm</span>
+        <span class="pop-sub">Normal tidal water height</span>
       </div>
       <div class="popover-metric-box">
-        <span class="pop-lbl">Marine Health</span>
-        <span class="pop-val" id="pop-mhi-val">78 / 100</span>
-        <span class="pop-sub">Stable water column</span>
+        <span class="pop-lbl">Ocean Fishing Health</span>
+        <span class="pop-val" id="pop-mhi-val">88 / 100</span>
+        <span class="pop-sub">Stable water column &amp; active fish</span>
       </div>
     </div>
     <div class="popover-note">
-      <strong>⚠️ Altimetric SLA Semantics:</strong> +8 cm indicates localized sea surface height elevation relative to the 20-year mean sea surface (MSS) altimetric reference datum (steric thermal expansion / eddy displacement). It is NOT an indicator of secular sea-level rise.
+      <strong>💡 What Sea Level &amp; Swell Mean:</strong> Normal sea level (+6 cm) indicates safe harbor entry and exit without storm surge. Low swell means stable hauling for nets.
     </div>
     <div class="popover-advisory" id="popover-advisory">
-      <strong>Operational Advisory:</strong> Safe for all artisanal and motorized commercial fishing craft beyond territorial artisanal limits.
+      <strong>Operational Advisory:</strong> Safe sailing for artisanal and motorized craft departing from Kochi Port. Maintain safe passage outside the 12 NM small boat zone.
     </div>
   </div>
 </div>
@@ -242,61 +242,15 @@
       </ul>
     </div>
     <div class="data-key-section">
-      <h4>📊 Core Parameters</h4>
+      <h4>📊 Core Parameters &amp; Signs</h4>
       <ul class="data-key-param-list">
-        <li><strong>SST (°C)</strong>: Sea Surface Temperature from Copernicus CMEMS physical forecast.</li>
-        <li><strong>SSTA (°C)</strong>: SST Anomaly relative to climatology (negative = active upwelling).</li>
-        <li><strong>Chl-a (mg/m³)</strong>: Chlorophyll-a from Sentinel-3 OLCI ocean color radiometry.</li>
-        <li><strong>SLA (cm)</strong>: Instantaneous Sea Level Anomaly from satellite radar altimetry relative to MSS datum.</li>
-        <li><strong>MHI (0–100)</strong>: Marine Health Index via Isolation Forest ecosystem anomaly detector.</li>
-        <li><strong>12 NM Limit (~22.2 km)</strong>: Territorial boundary reserved for artisanal fishers. Commercial PFZs are strictly filtered beyond 12 NM.</li>
+        <li><strong>Water Temperature (°C)</strong>: Sea surface temperature measured by Copernicus satellites. Best fishing is in the 26°C–29.5°C sweet spot.</li>
+        <li><strong>Water Temp Change (°C)</strong>: Temperature variation (cooler water often indicates upwelling rich with fish food).</li>
+        <li><strong>Fish Food / Plankton (mg/m³)</strong>: Chlorophyll-a micro-plant density that attracts fish schools like sardines, mackerel, and tuna.</li>
+        <li><strong>Sea Level &amp; Swell (cm)</strong>: Altimeter sea surface height; helps detect offshore currents and productive feeding edges.</li>
+        <li><strong>Ocean Health Score (0–100)</strong>: Overall AI ecosystem health score; higher scores mean clean, productive, lively waters.</li>
+        <li><strong>12 NM Small Boat Zone (~22 km)</strong>: Coastal belt reserved exclusively for traditional artisanal fishers. Commercial zones are beyond.</li>
       </ul>
-    </div>
-  </div>
-</div>
-
-<!-- =========================================================
-     OPERATIONAL SEA SAFETY & SWELL ADVISORY POPOVER
-     ========================================================= -->
-<div id="orca-sea-safety-popover" class="orca-popover-card" style="display: none;">
-  <div class="popover-header">
-    <div class="popover-title">
-      <span class="popover-icon">🌊</span>
-      <span>Sea Safety &amp; Swell Intelligence</span>
-    </div>
-    <button type="button" id="sea-safety-popover-close" class="popover-close">×</button>
-  </div>
-  <div class="popover-body">
-    <div class="popover-lead">
-      Operational safety assessment based on live satellite altimetry, ECMWF surface winds, and CMEMS sea-state models.
-    </div>
-    <div class="popover-metrics-grid">
-      <div class="popover-metric-box">
-        <span class="pop-lbl">Operational Status</span>
-        <span class="pop-val" id="pop-sea-status" style="color: #34d399;">SAFE / FAVORABLE</span>
-        <span class="pop-sub">Normal vessel operations</span>
-      </div>
-      <div class="popover-metric-box">
-        <span class="pop-lbl">Sea Level Anomaly</span>
-        <span class="pop-val" id="pop-sea-sla">+8.2 cm</span>
-        <span class="pop-sub">Altimetric datum (MSS)</span>
-      </div>
-      <div class="popover-metric-box">
-        <span class="pop-lbl">Significant Swell</span>
-        <span class="pop-val" id="pop-sea-wave">1.1 m</span>
-        <span class="pop-sub">Slight / Favorable</span>
-      </div>
-      <div class="popover-metric-box">
-        <span class="pop-lbl">Surface Wind</span>
-        <span class="pop-val" id="pop-sea-wind">11.4 kts</span>
-        <span class="pop-sub">Gentle Breeze (Beaufort 3)</span>
-      </div>
-    </div>
-    <div class="popover-note">
-      <strong>Sea Level Note:</strong> "+8 cm" is the instantaneous altimetric <em>Sea Level Anomaly (SLA)</em> relative to the 20-year Mean Sea Surface datum, driven by thermal expansion and mesoscale eddy circulation—not long-term sea-level rise.
-    </div>
-    <div class="popover-advisory" id="pop-sea-advisory">
-      ✓ Central Arabian Sea conditions are favorable for all artisanal and mechanized commercial craft. Maintain safe passage outside the 12 NM coastal baseline.
     </div>
   </div>
 </div>
@@ -307,51 +261,51 @@
 <aside class="hud-panel" id="left-panel">
 <div>
 <div class="panel-section-title">
-<span>Ocean Health Metric</span>
-<span class="section-small">SELECT DATA KEY</span>
+<span>Ocean Condition Layers</span>
+<span class="section-small">CLICK TO VIEW ON MAP</span>
 </div>
 <div class="metric-grid">
 <div class="metric-btn active" data-metric="health">
 <div class="metric-info">
 <span class="metric-dot health-dot"></span>
-<span>Overall Health Index</span>
+<span>Overall Ocean Health</span>
 </div>
-<span class="metric-val-tag">Composite</span>
+<span class="metric-val-tag">Best Fishing</span>
 </div>
 <div class="metric-btn" data-metric="oxygen">
 <div class="metric-info">
 <span class="metric-dot oxygen-dot"></span>
-<span>SST Anom (DO)</span>
+<span>Water Oxygen Level (DO)</span>
 </div>
-<span class="metric-val-tag">mg/L</span>
+<span class="metric-val-tag">Lively Waters</span>
 </div>
 <div class="metric-btn" data-metric="sst">
 <div class="metric-info">
 <span class="metric-dot sst-dot"></span>
-<span>Sea Surface Temp (SST)</span>
+<span>Water Temperature (SST)</span>
 </div>
 <span class="metric-val-tag">°C</span>
 </div>
 <div class="metric-btn" data-metric="ph">
 <div class="metric-info">
 <span class="metric-dot ph-dot"></span>
-<span>Ocean Acidity (pH)</span>
+<span>Water Cleanliness (pH)</span>
 </div>
-<span class="metric-val-tag">pH Scale</span>
+<span class="metric-val-tag">Clean Balance</span>
 </div>
 <div class="metric-btn" data-metric="chlorophyll">
 <div class="metric-info">
 <span class="metric-dot chlorophyll-dot"></span>
-<span>Phytoplankton (Chl-a)</span>
+<span>Fish Food (Plankton / Chl-a)</span>
 </div>
-<span class="metric-val-tag">mg/m³</span>
+<span class="metric-val-tag">Feeding Zone</span>
 </div>
 <div class="metric-btn" data-metric="salinity">
 <div class="metric-info">
 <span class="metric-dot salinity-dot"></span>
-<span>Surface Salinity</span>
+<span>Salt Level (Salinity)</span>
 </div>
-<span class="metric-val-tag">PSU</span>
+<span class="metric-val-tag">Normal Salt</span>
 </div>
 </div>
 </div>
@@ -359,10 +313,10 @@
 <div style="margin-top: 15px; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
 <div class="panel-section-title">
 <span>Coastal Port Weather</span>
-<span class="section-small">OPEN-METEO LIVE</span>
+<span class="section-small">LIVE PORT FORECAST</span>
 </div>
 <select id="port-weather-select" class="hud-select" style="width: 100%; background: #0a1628; color: var(--accent-cyan); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 6px; font-size: 11px; margin-bottom: 8px; outline: none;">
-<option value="">Select Coastal Port...</option>
+<option value="">Select Port for Weather...</option>
 <optgroup label="⭐ MAJOR WEST COAST PORTS">
 <option value="23.01,70.22,Kandla">🚢 Kandla (Deendayal Port, GJ)</option>
 <option value="22.74,69.71,Mundra">🚢 Mundra Port (Kutch, GJ)</option>
@@ -436,23 +390,23 @@
 <!-- Health filter -->
 <div>
 <div class="panel-section-title">
-<span>Health Status Filter</span>
+<span>Fishing Waters Filter</span>
 </div>
 <div class="filter-list">
 <label>
 <input checked="" name="filter-status" type="radio" value="all"/>
-<span>All Monitoring Nodes</span>
+<span>All Monitored Waters</span>
 </label>
 <label>
 <input name="filter-status" type="radio" value="optimal"/>
 <span class="optimal-text">
-            Healthy / Optimal Only
+            Good Fishing Waters (Healthy)
           </span>
 </label>
 <label>
 <input name="filter-status" type="radio" value="stressed"/>
 <span class="stressed-text">
-            Hypoxic / Stressed Pockets
+            Low Oxygen / Poor Waters
           </span>
 </label>
 </div>
@@ -473,13 +427,13 @@
 </div>
 <!-- Coordinates -->
 <div class="info-row">
-<span>Coordinates:</span>
+<span>GPS Location:</span>
 <span id="inspector-coords">
         14.00°N, 71.00°E
       </span>
 </div>
 <div class="info-row">
-<span>Bathymetry Depth:</span>
+<span>Sea Floor Depth:</span>
 <span class="accent-blue-text" id="inspector-depth">
         2,840 m
       </span>
@@ -490,7 +444,7 @@
 <div class="gauge-item">
 <div class="gauge-top">
 <span class="gauge-name">
-            SST Anomaly
+            Water Temp Change (SST Anomaly)
           </span>
 <span class="gauge-val" id="meter-thetao-anom-val">
             +0.00 °C
@@ -504,7 +458,7 @@
 <div class="gauge-item">
 <div class="gauge-top">
 <span class="gauge-name">
-            Sea Surface Temp
+            Water Temperature
           </span>
 <span class="gauge-val" id="meter-temp-val">
             28.2 °C
@@ -518,7 +472,7 @@
 <div class="gauge-item">
 <div class="gauge-top">
 <span class="gauge-name">
-            Sea Level Anom (SLA)
+            Sea Level &amp; Swell (SLA)
           </span>
 <span class="gauge-val" id="meter-sla-anom-val">
             0.00 m
@@ -532,7 +486,7 @@
 <div class="gauge-item">
 <div class="gauge-top">
 <span class="gauge-name">
-            Salinity Anomaly
+            Salt Level (Salinity)
           </span>
 <span class="gauge-val" id="meter-so-anom-val">
             0.00 PSU
@@ -546,7 +500,7 @@
 <div class="gauge-item">
 <div class="gauge-top">
 <span class="gauge-name">
-            Chlorophyll-a
+            Fish Food (Plankton / Chl-a)
           </span>
 <span class="gauge-val" id="meter-log-chl-val">
             0.20 mg/m³
@@ -557,7 +511,7 @@
 </div>
 </div>
 <div style="font-size: 10px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid var(--border-subtle); padding-top: 5px;">
-  ℹ️ DO &amp; pH: Unavailable from satellite array.
+  ℹ️ Water Oxygen &amp; Cleanliness: Modeled via synthetic ocean physics.
 </div>
 </div>
 <!-- Arabian Sea Marine Health Index Graph Monitor -->
@@ -565,7 +519,7 @@
   <div class="sparkline-header mhi-header">
     <div class="mhi-title-group">
       <span class="mhi-icon">🌊</span>
-      <span class="mhi-title">ARABIAN SEA MHI</span>
+      <span class="mhi-title">ARABIAN SEA FISHING HEALTH</span>
     </div>
     <div class="mhi-meta-group">
       <span class="mhi-avg-tag">AVG: <strong id="mhi-basin-avg">55.2</strong></span>
@@ -591,7 +545,7 @@
 <div class="bottom-station-nav" id="bottom-station-nav">
   <div class="bottom-station-header">
     <span class="pulse-icon"></span>
-    <span class="dock-label">PORT / STATION:</span>
+    <span class="dock-label">PORT / DEPARTURE HARBOUR:</span>
   </div>
   <div class="station-select-wrapper">
     <select id="station-select" class="station-select" aria-label="Select Coastal Station">
@@ -657,7 +611,7 @@
 <div class="bottom-hud-divider"></div>
 <div class="legend-block">
 <div class="legend-title" id="legend-title">
-        Ocean Health Index Key
+        Fishing Waters &amp; Ocean Health Key
       </div>
 <div class="legend-gradient-wrapper">
 <div class="legend-gradient-bar" id="legend-gradient"></div>
@@ -678,19 +632,19 @@
 <div class="key-item">
 <span class="key-indicator optimal-indicator"></span>
 <span>
-          Optimal / Healthy
+          Good Fishing Waters
         </span>
 </div>
 <div class="key-item">
 <span class="key-indicator moderate-indicator"></span>
 <span>
-          Moderate / Monitored
+          Fair / Moderate Waters
         </span>
 </div>
 <div class="key-item">
 <span class="key-indicator stressed-indicator"></span>
 <span>
-          Hypoxic / Stressed
+          Low Oxygen / Poor Waters
         </span>
 </div>
 </div>
@@ -865,29 +819,29 @@
           <span class="departure-spot-coords" id="dep-spot-coords">19.45°N, 71.85°E</span>
         </div>
         <div class="insp-explainer-banner">
-          <span>ℹ️ Discrete CMEMS model sampling cell (~35 km resolution) measuring authentic physical oceanography.</span>
+          <span>ℹ️ Live Satellite Ocean Point (~35 km zone) measuring real water conditions and fish feeding signs.</span>
         </div>
         <div class="departure-spot-chips">
-          <span class="dep-chip" id="dep-spot-health">Health: 85/100</span>
-          <span class="dep-chip" id="dep-spot-sst">SST: 27.8°C</span>
-          <span class="dep-chip" id="dep-spot-chl">Chl-a: 2.1 mg/m³</span>
-          <span class="dep-chip" id="dep-spot-sal">Sal: 35.5 PSU</span>
-          <span class="dep-chip" id="dep-spot-sla">SLA: +8 cm</span>
-          <span class="dep-chip dep-chip-safe" id="dep-spot-reg">✓ 12 NM Compliant</span>
+          <span class="dep-chip" id="dep-spot-health">Ocean Health: 85/100</span>
+          <span class="dep-chip" id="dep-spot-sst">Water Temp: 27.8°C</span>
+          <span class="dep-chip" id="dep-spot-chl">Fish Food: 2.1 mg/m³</span>
+          <span class="dep-chip" id="dep-spot-sal">Salt Level: 35.5 PSU</span>
+          <span class="dep-chip" id="dep-spot-sla">Sea Level: Normal (+6 cm)</span>
+          <span class="dep-chip dep-chip-safe" id="dep-spot-reg">✓ Safe Beyond 12 NM Small Boat Zone</span>
         </div>
       </div>
 
       <!-- Suitability / Limiting Factors Box -->
       <div class="insp-rationale-box" id="dep-spot-rationale-box">
-        <div class="insp-rationale-title" id="dep-rationale-title">Suitability Rationale</div>
+        <div class="insp-rationale-title" id="dep-rationale-title">Fishing Conditions Rationale</div>
         <ul class="insp-rationale-list" id="dep-rationale-list">
-          <li>Optimal thermal sweet spot (27.8°C)</li>
+          <li>Optimal water temperature sweet spot (27.8°C)</li>
         </ul>
       </div>
 
       <div class="departure-select-group">
         <label for="departure-port-select" class="departure-label">
-          <span>Departure Port:</span>
+          <span>Departure Port / Harbour:</span>
           <span class="dep-nearest-tag" id="dep-nearest-tag">Nearest Detected</span>
         </label>
         <select id="departure-port-select" class="departure-select"></select>
@@ -895,29 +849,29 @@
 
       <div class="departure-metrics-grid">
         <div class="dep-metric-box">
-          <span class="dep-metric-label">Straight Line</span>
+          <span class="dep-metric-label">Straight Compass Run</span>
           <span class="dep-metric-val" id="dep-geodesic-dist">-- NM</span>
           <span class="dep-metric-sub" id="dep-geodesic-km">(-- km)</span>
         </div>
         <div class="dep-metric-box">
-          <span class="dep-metric-label">Nav Channel</span>
+          <span class="dep-metric-label">Safe Boat Route</span>
           <span class="dep-metric-val" id="dep-channel-dist">-- NM</span>
           <span class="dep-metric-sub" id="dep-channel-km">(-- km)</span>
         </div>
         <div class="dep-metric-box">
-          <span class="dep-metric-label">Est. Transit</span>
+          <span class="dep-metric-label">Estimated Transit</span>
           <span class="dep-metric-val" id="dep-transit-time">--</span>
           <span class="dep-metric-sub">@ 10 kts cruise</span>
         </div>
         <div class="dep-metric-box">
-          <span class="dep-metric-label">Initial Bearing</span>
+          <span class="dep-metric-label">Compass Heading</span>
           <span class="dep-metric-val" id="dep-bearing">--°</span>
           <span class="dep-metric-sub" id="dep-cardinal-dir">--</span>
         </div>
       </div>
 
       <div class="departure-note" id="dep-route-note">
-        Navigational route departs seaward and strictly respects the 12 NM territorial limit.
+        Navigational route departs safely seaward and stays clear of the 12 NM traditional small boat reserve.
       </div>
     </div>
     <div class="orca-modal-footer">
@@ -944,34 +898,34 @@
       <div class="sym-section-label">MAP LINES (WHAT DOTTED LINES MEAN)</div>
       <div class="sym-row">
         <span class="sym-line-sample sym-line-12nm"></span>
-        <span class="sym-desc"><b>Cyan Dashed (- - -)</b>: <b>12 NM Limit (~22.2 km)</b> — Territorial Waters Reserve for traditional artisanal fishers. Favorable commercial PFZs strictly beyond.</span>
+        <span class="sym-desc"><b>Cyan Dashed (- - -)</b>: <b>12 NM Small Boat Zone (~22 km)</b> — Shoreline waters reserved exclusively for traditional small boats. Commercial fishing grounds are positioned safely beyond this line.</span>
       </div>
       <div class="sym-row">
         <span class="sym-line-sample sym-line-route"></span>
-        <span class="sym-desc"><b>Sky Blue Dashed (- - -)</b>: <b>Active Navigational Route</b> — Direct transit channel from chosen coastal departure port to favorable fishing spot.</span>
+        <span class="sym-desc"><b>Sky Blue Dashed (- - -)</b>: <b>Safe Boat Route</b> — Transit route plotted from your chosen port directly to the fishing spot.</span>
       </div>
       <div class="sym-row">
         <span class="sym-line-sample sym-line-eez"></span>
-        <span class="sym-desc"><b>Amber Solid (───)</b>: <b>Indian EEZ Boundary</b> — 200 Nautical Mile Exclusive Economic Zone perimeter.</span>
+        <span class="sym-desc"><b>Amber Solid (───)</b>: <b>Indian National Fishing Boundary (EEZ)</b> — 200 Nautical Mile Indian sovereign maritime economic zone.</span>
       </div>
     </div>
     <div class="symbology-section">
       <div class="sym-section-label">FISHING SPOTS (COLOR CODED)</div>
       <div class="sym-row">
         <span class="sym-dot-sample sym-dot-high"></span>
-        <span class="sym-desc"><b style="color: #00f5d4;">Cyan Beacon (●)</b>: <b>High / Favorable PFZ</b> (Score &ge; 68, Health &ge; 42 — peak thermal envelope, upwelling &amp; high Chl-a).</span>
+        <span class="sym-desc"><b style="color: #00f5d4;">Cyan Beacon (●)</b>: <b>Prime Fishing Ground</b> (Score &ge; 68, Health &ge; 42 — peak feeding zone, favorable water temp &amp; high plankton food).</span>
       </div>
       <div class="sym-row">
         <span class="sym-dot-sample sym-dot-mod"></span>
-        <span class="sym-desc"><b style="color: #fbbf24;">Amber Beacon (●)</b>: <b>Moderate / Potential PFZ</b> (Score &ge; 50, Health &ge; 32 — favorable secondary forage &amp; thermal conditions).</span>
+        <span class="sym-desc"><b style="color: #fbbf24;">Amber Beacon (●)</b>: <b>Moderate Fishing Ground</b> (Score &ge; 50, Health &ge; 32 — fair fish activity &amp; good feeding conditions).</span>
       </div>
       <div class="sym-row">
         <span class="sym-dot-sample sym-dot-low"></span>
-        <span class="sym-desc"><b style="color: #94a3b8;">Slate Ring (◎)</b>: <b>Less Favorable PFZ</b> (Score &ge; 38 — constrained zone; click to view specific limiting factors).</span>
+        <span class="sym-desc"><b style="color: #94a3b8;">Slate Ring (◎)</b>: <b>Low Activity Ground</b> (Score &ge; 38 — click to view limiting factors like low fish food).</span>
       </div>
       <div class="sym-row">
         <span class="sym-dot-sample sym-dot-node"></span>
-        <span class="sym-desc"><b style="color: #64748b;">Small Dim Node (·)</b>: <b>Environmental Sampling Cell</b> (~35 km CMEMS continuous monitoring node; not a fishing spot).</span>
+        <span class="sym-desc"><b style="color: #64748b;">Small Dim Node (·)</b>: <b>Ocean Monitoring Point</b> (~35 km satellite sensor grid; not a fishing spot).</span>
       </div>
     </div>
   </div>
@@ -994,9 +948,9 @@
        ========================================================= -->
 <script src="ocean_data.js?v=3"></script>
 <script src="cesium-globe.js?v=5"></script>
-<script src="app.js?v=9"></script>
-<script src="orca-live-bridge.js?v=2"></script>
-<script src="orca-agent.js?v=1"></script>
+<script src="app.js?v=10"></script>
+<script src="orca-live-bridge.js?v=3"></script>
+<script src="orca-agent.js?v=2"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
       const select = document.getElementById("port-weather-select");
