@@ -56,10 +56,32 @@
     "Paradip": { name: "Paradip Port", lat: 20.27, lon: 86.67, isMajor: false, healthScore: 80, sla: "+7 cm" }
   };
 
+  window.ORCA_PORT_MAP = PORT_DATA_MAP;
+
   function updateSelectedPortSafety(st) {
     const portInfo = PORT_DATA_MAP[st] || { name: `${st} Port`, lat: 9.93, lon: 76.27, isMajor: true, healthScore: 85, sla: "+6 cm" };
+    
+    if (window.ORCA_STATE) {
+      window.ORCA_STATE.selectedDeparture = {
+        name: portInfo.name,
+        lat: portInfo.lat,
+        lon: portInfo.lon,
+        latitude: portInfo.lat,
+        longitude: portInfo.lon,
+        isMajor: portInfo.isMajor
+      };
+    }
+
     if (typeof window.updateSeaConditionsIndicator === "function") {
       window.updateSeaConditionsIndicator(portInfo);
+    }
+
+    if (typeof window.updateCoastalPortWeather === "function") {
+      window.updateCoastalPortWeather(portInfo);
+    }
+
+    if (window.ORCA_NAVIGATION && typeof window.ORCA_NAVIGATION.recalculateActiveRoute === "function") {
+      window.ORCA_NAVIGATION.recalculateActiveRoute();
     }
   }
 

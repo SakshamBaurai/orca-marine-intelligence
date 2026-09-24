@@ -441,9 +441,6 @@
     btnAutoRotate:
       document.getElementById("btn-auto-rotate"),
 
-    btnAskOrca:
-      document.getElementById("btn-ask-orca"),
-
     metricBtns:
       document.querySelectorAll(".metric-btn"),
 

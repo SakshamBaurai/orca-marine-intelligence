@@ -111,10 +111,6 @@
 </svg>
         Orbit: Off
       </button>
-<button class="hud-btn hud-btn-primary" id="btn-ask-orca" title="Open ORCA Marine Intelligence Command">
-  <span class="orca-btn-dot"></span>
-  <span class="orca-btn-text">ASK ORCA</span>
-</button>
 <button class="hud-btn" id="btn-data-key" title="Open Oceanographic Data Key &amp; Metric Legend">
   <span style="font-size: 13px; margin-right: 3px;">ℹ️</span>
   <span>DATA KEY</span>
@@ -315,67 +311,8 @@
 <span>Coastal Port Weather</span>
 <span class="section-small">LIVE PORT FORECAST</span>
 </div>
-<select id="port-weather-select" class="hud-select" style="width: 100%; background: #0a1628; color: var(--accent-cyan); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 6px; font-size: 11px; margin-bottom: 8px; outline: none;">
-<option value="">Select Port for Weather...</option>
-<optgroup label="⭐ MAJOR WEST COAST PORTS">
-<option value="23.01,70.22,Kandla">🚢 Kandla (Deendayal Port, GJ)</option>
-<option value="22.74,69.71,Mundra">🚢 Mundra Port (Kutch, GJ)</option>
-<option value="21.64,69.61,Porbandar">🚢 Porbandar Port (Saurashtra, GJ)</option>
-<option value="20.91,70.37,Veraval">🚢 Veraval Port (Saurashtra, GJ)</option>
-<option value="20.91,71.50,Pipavav">🚢 Pipavav Port (APM Terminals, GJ)</option>
-<option value="21.10,72.64,Hazira">🚢 Hazira Port (Surat, GJ)</option>
-<option value="18.94,72.84,Mumbai">🚢 Mumbai Port (Maharashtra)</option>
-<option value="18.95,72.95,JNPT">🚢 JNPT (Nhava Sheva, MH)</option>
-<option value="15.41,73.80,Mormugao">🚢 Mormugao Port (Goa)</option>
-<option value="12.91,74.88,Mangaluru">🚢 New Mangalore Port (KA)</option>
-<option value="9.93,76.27,Kochi">🚢 Kochi Port (Kerala)</option>
-</optgroup>
-<optgroup label="📍 GUJARAT COASTLINE">
-<option value="23.24,68.71,Jakhau">⚓ Jakhau (Western Kutch)</option>
-<option value="22.83,69.36,Mandvi">⚓ Mandvi (Kutch Dhow Port)</option>
-<option value="22.96,70.45,Navlakhi">⚓ Navlakhi (Inner Gulf)</option>
-<option value="22.50,70.04,Bedi">⚓ Bedi (Jamnagar)</option>
-<option value="22.43,69.84,Sikka">⚓ Sikka (Reliance SPM)</option>
-<option value="22.31,69.60,Salaya">⚓ Salaya (Crude Terminal)</option>
-<option value="22.47,69.07,Okha">⚓ Okha (Dwarka)</option>
-<option value="21.12,70.11,Mangrol">⚓ Mangrol (Saurashtra)</option>
-<option value="20.87,71.37,Jafrabad">⚓ Jafrabad (Cement/Fish)</option>
-<option value="21.41,72.20,Alang">⚓ Alang (Ship Recycling)</option>
-<option value="21.78,72.18,Bhavnagar">⚓ Bhavnagar (Lock Gate)</option>
-<option value="21.70,72.53,Dahej">⚓ Dahej (LNG / Chemical)</option>
-<option value="20.40,72.83,Daman">⚓ Daman (Damanganga)</option>
-</optgroup>
-<optgroup label="📍 MAHARASHTRA / KONKAN">
-<option value="18.73,72.88,Alibaug">⚓ Alibaug (Mandwa)</option>
-<option value="18.28,72.98,Dighi">⚓ Dighi (Rajpuri Creek)</option>
-<option value="17.59,73.18,Dabhol">⚓ Dabhol (Vashishti)</option>
-<option value="17.30,73.21,Jaigad">⚓ Jaigad (Shastri River)</option>
-<option value="16.99,73.30,Ratnagiri">⚓ Ratnagiri (Mirya Bay)</option>
-<option value="16.56,73.33,Vijaydurg">⚓ Vijaydurg (Fort Port)</option>
-<option value="16.38,73.38,Devgad">⚓ Devgad (Natural Creek)</option>
-<option value="16.05,73.47,Malvan">⚓ Malvan (Sindhudurg)</option>
-</optgroup>
-<optgroup label="📍 GOA & KARNATAKA">
-<option value="15.50,73.83,Panaji">⚓ Panaji (Mandovi)</option>
-<option value="14.80,74.12,Karwar">⚓ Karwar (Baithkol/Naval)</option>
-<option value="14.52,74.35,Tadri">⚓ Tadri (Aghanashini)</option>
-<option value="14.28,74.44,Honnavar">⚓ Honnavar (Sharavathi)</option>
-<option value="13.98,74.55,Bhatkal">⚓ Bhatkal (Fish Harbour)</option>
-<option value="13.63,74.69,Kundapura">⚓ Kundapura (Gangolli)</option>
-<option value="13.35,74.70,Malpe">⚓ Malpe (Udupi Deep-Sea)</option>
-</optgroup>
-<optgroup label="📍 SOUTH & EAST COAST">
-<option value="8.89,76.59,Kollam">⚓ Kollam (Ashtamudi, KL)</option>
-<option value="8.52,76.94,Thiruvananthapuram">⚓ Vizhinjam (Trivandrum, KL)</option>
-<option value="8.76,78.13,Thoothukudi">⚓ Thoothukudi (VOC Port, TN)</option>
-<option value="13.08,80.27,Chennai">⚓ Chennai Port (TN)</option>
-<option value="16.99,82.25,Kakinada">⚓ Kakinada (AP)</option>
-<option value="17.69,83.22,Visakhapatnam">⚓ Visakhapatnam Port (AP)</option>
-<option value="20.27,86.67,Paradip">⚓ Paradip Port (Odisha)</option>
-</optgroup>
-</select>
-<div id="port-weather-info" style="display: none; background: rgba(10, 22, 40, 0.7); padding: 10px; border-radius: 4px; font-size: 11px; border: 1px solid #142a45;">
-<div id="weather-port-name" style="font-weight: bold; color: var(--accent-cyan); margin-bottom: 6px;"></div>
+<div id="port-weather-info" style="display: block; background: rgba(10, 22, 40, 0.7); padding: 10px; border-radius: 4px; font-size: 11px; border: 1px solid #142a45;">
+<div id="weather-port-name" style="font-weight: bold; color: var(--accent-cyan); margin-bottom: 6px;">Kochi Port Weather</div>
 <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
 <span style="color: var(--text-muted);">Air Temperature:</span> <span id="weather-temp" style="color: #fff; font-weight: bold;">--</span>
 </div>
@@ -541,6 +478,41 @@
   </div>
   <svg class="sparkline-svg" id="inspector-sparkline" style="display:none;"></svg>
 </div>
+
+<!-- Active Route Result Card -->
+<div id="orca-active-route-card" class="route-result-panel" style="display: none;">
+  <div class="route-result-header">
+    <div class="route-result-title">
+      <span>🧭</span> ROUTE TO FISHING GROUND
+    </div>
+    <span class="route-result-badge">ACTIVE PLOT</span>
+  </div>
+  <div class="route-result-grid">
+    <div class="route-info-row">
+      <span class="route-info-label">Departure:</span>
+      <span class="route-info-val" id="route-card-departure">Kochi Port</span>
+    </div>
+    <div class="route-info-row">
+      <span class="route-info-label">Destination:</span>
+      <span class="route-info-val" id="route-card-destination">Fishing Zone #12</span>
+    </div>
+    <div class="route-info-row">
+      <span class="route-info-label">Distance:</span>
+      <span class="route-info-val route-highlight-cyan" id="route-card-distance">18.6 km</span>
+    </div>
+    <div class="route-info-row">
+      <span class="route-info-label">Estimated Travel:</span>
+      <span class="route-info-val route-highlight-gold" id="route-card-travel-time">~1 hr 52 min</span>
+    </div>
+    <div class="route-info-row">
+      <span class="route-info-label">Heading:</span>
+      <span class="route-info-val" id="route-card-heading">284°</span>
+    </div>
+  </div>
+  <button type="button" class="btn-clear-route" id="btn-clear-active-route" title="Clear Active Navigation Route">
+    <span>✕</span> Clear Active Route
+  </button>
+</div>
 </aside><footer class="hud-panel" id="bottom-hud">
 <div class="bottom-station-nav" id="bottom-station-nav">
   <div class="bottom-station-header">
@@ -655,149 +627,7 @@
 <div class="tooltip-body" id="tooltip-body">
       Telemetry Loading...
     </div>
-</div><div class="hud-panel orca-ai-drawer" id="orca-ai-widget">
-  <div class="ai-header" id="orca-ai-header">
-    <div class="ai-header-left">
-      <span class="ai-avatar-pulse">🐋</span>
-      <span class="ai-title">ORCA COGNITIVE AGENT</span>
-      <span class="rag-badge live-model-badge" id="ai-status-badge">TOOL-CALLING AI</span>
-    </div>
-    <div class="ai-header-actions">
-      <button type="button" class="ai-drawer-btn" id="ai-drawer-toggle" title="Collapse / Expand Agent Drawer">▼</button>
-    </div>
-  </div>
-  <div class="ai-drawer-body" id="ai-drawer-body">
-    <div class="ai-quick-chips" id="ai-quick-chips">
-      <button type="button" class="ai-chip" data-query="Where is the best fishing spot right now?">🎯 Best Fishing Spot</button>
-      <button type="button" class="ai-chip" data-query="What is the sea surface temperature at Kandla?">🌡️ Kandla SST</button>
-      <button type="button" class="ai-chip" data-query="Are there any active upwelling fronts?">🌊 Active Upwelling</button>
-      <button type="button" class="ai-chip" data-query="What is the marine health index here?">🩺 Marine Health</button>
-      <button type="button" class="ai-chip" data-query="Switch to 2D navigation map">🗺️ Switch to 2D</button>
-    </div>
-    <div class="ai-chat-history" id="ai-chat-history">
-      <div class="orca-message ai-bot-msg">
-        <div class="ai-sender"><span class="ai-avatar-mini">🐋</span> ORCA Tool-Calling Agent</div>
-        <div class="ai-content">
-          Operational. Connected to Copernicus CMEMS, Open-Meteo live atmospheric telemetry, and Isolation Forest ocean anomaly detectors. Ask me about ocean physics, thermal upwelling, potential fishing zones (PFZ), or coastal ports.
-        </div>
-      </div>
-    </div>
-    <form class="ai-chat-form" id="ai-chat-form">
-      <input autocomplete="off" id="ai-chat-input" placeholder="Ask about ocean physics, fishing spots, ports..." type="text"/>
-      <button type="submit" id="ai-submit-btn" title="Send query">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-      </button>
-    </form>
-  </div>
-</div>
-
-<!-- Floating launcher button when drawer is minimized -->
-<button type="button" id="orca-ai-launcher" class="orca-ai-launcher-btn" style="display: none;">
-  <span class="ai-launcher-dot"></span>⚡ ORCA AI
-</button>
-
-<!-- =========================================================
-     ORCA FULLSCREEN AI COMMAND WORKSPACE
-     ========================================================= -->
-<div id="orca-ai-workspace" class="orca-ai-workspace">
-  <div class="workspace-backdrop" id="workspace-backdrop"></div>
-  <div class="workspace-container">
-    <div class="workspace-header">
-      <div class="workspace-header-brand">
-        <div class="workspace-pill-badge"><span class="pulse-cyan-dot"></span> ORCA INTELLIGENCE COMMAND</div>
-        <h2 class="workspace-title">Marine Intelligence &amp; Autonomous Navigation Layer</h2>
-      </div>
-      <button type="button" class="workspace-close-btn" id="workspace-close-btn" title="Return to Globe (Esc)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        <span>Return to Globe</span>
-      </button>
-    </div>
-
-    <!-- Suggested Questions -->
-    <div class="workspace-prompts-section">
-      <div class="prompts-label">SUGGESTED COMMANDS</div>
-      <div class="workspace-prompt-chips" id="workspace-quick-chips">
-        <button type="button" class="prompt-chip" data-query="What are the best fishing spots from Mumbai?">🎯 Best fishing spots from Mumbai</button>
-        <button type="button" class="prompt-chip" data-query="Show nearby fishing zones">🐟 Find nearby fishing zones</button>
-        <button type="button" class="prompt-chip" data-query="Find the healthiest zone">🩺 Find the healthiest zone</button>
-        <button type="button" class="prompt-chip" data-query="Calculate distance from Mumbai Port">📏 Distance from Mumbai Port</button>
-        <button type="button" class="prompt-chip" data-query="What is the 12 NM regulatory boundary?">⚖️ 12 NM regulatory boundary</button>
-        <button type="button" class="prompt-chip" data-query="What is the weather in Mumbai?">🌦️ Mumbai coastal weather</button>
-      </div>
-    </div>
-
-    <!-- Message & Intelligence Card Stream -->
-    <div class="workspace-stream" id="workspace-stream">
-      <div class="workspace-msg workspace-msg-bot">
-        <div class="workspace-msg-sender">
-          <span class="workspace-avatar">🐋</span>
-          <span class="sender-name">ORCA Marine Intelligence</span>
-          <span class="verified-tag">12 NM BOUNDARY HARD FILTER ACTIVE</span>
-        </div>
-        <div class="workspace-msg-content">
-          Operational. Directly coupled to Copernicus Marine Service (CMEMS) numerical models, Sentinel-3 satellite ocean color arrays, and the Maritime Zones of India regulatory boundary.<br/><br/>
-          Ask natural-language queries about fishing grounds, departure routes, coastal ports, or marine ecosystem health.
-        </div>
-      </div>
-    </div>
-
-    <!-- Contextual Loading Progress State -->
-    <div class="workspace-progress" id="workspace-progress" style="display: none;">
-      <div class="workspace-progress-track"><div class="workspace-progress-bar" id="workspace-progress-bar"></div></div>
-      <div class="workspace-progress-status" id="workspace-progress-status">ORCA is analyzing marine conditions...</div>
-    </div>
-
-    <!-- Command Input Bar -->
-    <form class="workspace-form" id="workspace-form">
-      <div class="workspace-input-row">
-        <input type="text" id="workspace-query-input" autocomplete="off" placeholder="What would you like to know? e.g. Where should I fish from Mumbai?" />
-        <button type="submit" id="workspace-submit" title="Send query to ORCA">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-        </button>
-      </div>
-      <div class="workspace-form-footer">
-        <label class="toggle-globe-label" title="When enabled, geographic results immediately update 3D camera and route">
-          <input type="checkbox" id="toggle-show-globe" checked />
-          <span class="custom-chk"></span>
-          <span>Show result on Globe</span>
-        </label>
-        <div class="workspace-disclaimer">Zero hallucinations • Copernicus CMEMS physical forecast • 12 NM regulated</div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- =========================================================
-     SHOW RESULT ON GLOBE REQUIRED MODAL
-     ========================================================= -->
-<div id="orca-globe-gate-modal" class="orca-modal-backdrop" style="display: none;">
-  <div class="orca-modal-panel">
-    <div class="orca-modal-header">
-      <div class="orca-modal-title">
-        <span class="orca-modal-icon">🌐</span>
-        <span>Enable Globe Navigation</span>
-      </div>
-      <button type="button" id="orca-gate-modal-close" class="orca-modal-close">×</button>
-    </div>
-    <div class="orca-modal-body">
-      <p class="orca-modal-text">
-        To navigate to this fishing zone, plot sea routes, and view real-time 3D telemetry, please enable the <strong>"Show result on Globe"</strong> option.
-      </p>
-      <div class="orca-gate-checkbox-prompt">
-        <label class="toggle-globe-label">
-          <input type="checkbox" id="gate-confirm-checkbox" />
-          <span>Enable "Show result on Globe"</span>
-        </label>
-      </div>
-    </div>
-    <div class="orca-modal-footer">
-      <button type="button" id="orca-gate-cancel-btn" class="orca-modal-btn orca-btn-secondary">Cancel</button>
-      <button type="button" id="orca-gate-proceed-btn" class="orca-modal-btn orca-btn-primary">Enable &amp; Proceed</button>
-    </div>
-  </div>
-</div>
-
-<!-- =========================================================
+</div><!-- =========================================================
      SELECTED POINT & DEPARTURE NAVIGATION INSPECTOR
      ========================================================= -->
 <div id="orca-departure-modal" class="orca-modal-backdrop" style="display: none;">
@@ -839,12 +669,12 @@
         </ul>
       </div>
 
-      <div class="departure-select-group">
-        <label for="departure-port-select" class="departure-label">
+      <div class="departure-port-display-box">
+        <div class="departure-label">
           <span>Departure Port / Harbour:</span>
-          <span class="dep-nearest-tag" id="dep-nearest-tag">Nearest Detected</span>
-        </label>
-        <select id="departure-port-select" class="departure-select"></select>
+          <span class="dep-source-tag">Selected Harbour</span>
+        </div>
+        <div class="departure-port-name-val" id="dep-port-title">Kochi Port</div>
       </div>
 
       <div class="departure-metrics-grid">
@@ -875,7 +705,6 @@
       </div>
     </div>
     <div class="orca-modal-footer">
-      <button type="button" id="orca-departure-ask-btn" class="orca-modal-btn orca-btn-secondary">Ask ORCA</button>
       <button type="button" id="orca-departure-cancel-btn" class="orca-modal-btn orca-btn-secondary">Close</button>
       <button type="button" id="orca-departure-confirm-btn" class="orca-modal-btn orca-btn-primary">Plot Route &amp; Take Me There</button>
     </div>
@@ -950,48 +779,44 @@
 <script src="cesium-globe.js?v=5"></script>
 <script src="app.js?v=10"></script>
 <script src="orca-live-bridge.js?v=3"></script>
+<script src="orca-navigation.js?v=1"></script>
 <script src="orca-agent.js?v=2"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const select = document.getElementById("port-weather-select");
       const infoBox = document.getElementById("port-weather-info");
       const elName = document.getElementById("weather-port-name");
       const elTemp = document.getElementById("weather-temp");
       const elWind = document.getElementById("weather-wind");
       const elHum = document.getElementById("weather-humidity");
 
-      if (select) {
-        select.addEventListener("change", async (e) => {
-          const val = e.target.value;
-          if (!val) return;
+      window.updateCoastalPortWeather = async function (portInfo) {
+        if (!portInfo) return;
+        if (elName) elName.textContent = `Loading ${portInfo.name}...`;
+        if (elTemp) elTemp.textContent = "--";
+        if (elWind) elWind.textContent = "--";
+        if (elHum) elHum.textContent = "--";
+        if (infoBox) infoBox.style.display = "block";
 
-          const [lat, lon, name] = val.split(",");
-          
-          elName.textContent = `Loading ${name}...`;
-          elTemp.textContent = "--";
-          elWind.textContent = "--";
-          elHum.textContent = "--";
-          infoBox.style.display = "block";
-
-          try {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,relative_humidity_2m`;
-            const res = await fetch(url);
-            const data = await res.json();
-            
-            if (data && data.current) {
-              elName.textContent = name + " Live Weather";
-              elTemp.textContent = data.current.temperature_2m + " °C";
-              elWind.textContent = data.current.wind_speed_10m + " km/h";
-              elHum.textContent = data.current.relative_humidity_2m + " %";
-            } else {
-              elName.textContent = "Error fetching data";
-            }
-          } catch (err) {
-            console.error(err);
-            elName.textContent = "Network Error";
+        try {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${portInfo.lat}&longitude=${portInfo.lon}&current=temperature_2m,wind_speed_10m,relative_humidity_2m`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data && data.current) {
+            if (elName) elName.textContent = `${portInfo.name} Live Weather`;
+            if (elTemp) elTemp.textContent = `${data.current.temperature_2m} °C`;
+            if (elWind) elWind.textContent = `${data.current.wind_speed_10m} km/h`;
+            if (elHum) elHum.textContent = `${data.current.relative_humidity_2m} %`;
+          } else {
+            if (elName) elName.textContent = `${portInfo.name} Weather`;
           }
-        });
-      }
+        } catch (err) {
+          console.error("Coastal weather fetch error:", err);
+          if (elName) elName.textContent = `${portInfo.name} Weather`;
+        }
+      };
+
+      // Initial load with default port
+      window.updateCoastalPortWeather({ name: "Kochi Port", lat: 9.93, lon: 76.27 });
 
       // Map Symbology & Legend Minimizer Handler
       const symToggleBtn = document.getElementById("symbology-toggle-btn");
