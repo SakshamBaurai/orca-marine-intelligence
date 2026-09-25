@@ -143,7 +143,13 @@
 
     // Departure Port Title (Single source of truth)
     const depPortTitle = document.getElementById("dep-port-title");
-    if (depPortTitle) depPortTitle.textContent = originPort.name || "Selected Port";
+    if (depPortTitle) {
+      const rawDepName = originPort.name || "Selected Port";
+      depPortTitle.setAttribute("data-orig-port", rawDepName);
+      depPortTitle.textContent = (window.ORCA_I18N && typeof window.ORCA_I18N.translatePortText === "function")
+        ? window.ORCA_I18N.translatePortText(rawDepName)
+        : rawDepName;
+    }
 
     // Dynamic Route Calculation
     const distKm = calculateHaversineKm(originPort.lat, originPort.lon, spotLat, spotLon);
@@ -262,7 +268,13 @@
 
     const spotName = routeData.spot.label || routeData.spot.name || `Fishing Zone #${routeData.spot.id || '12'}`;
 
-    if (elDep) elDep.textContent = routeData.originPort.name || "Departure Port";
+    if (elDep) {
+      const rawDep = routeData.originPort.name || "Departure Port";
+      elDep.setAttribute("data-orig-port", rawDep);
+      elDep.textContent = (window.ORCA_I18N && typeof window.ORCA_I18N.translatePortText === "function")
+        ? window.ORCA_I18N.translatePortText(rawDep)
+        : rawDep;
+    }
     if (elDest) elDest.textContent = spotName;
     if (elDist) elDist.textContent = routeData.distStr;
     if (elTravel) elTravel.textContent = routeData.travelStr;

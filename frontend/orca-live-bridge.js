@@ -74,6 +74,15 @@
 
     if (typeof window.updateSeaConditionsIndicator === "function") {
       window.updateSeaConditionsIndicator(portInfo);
+    } else {
+      const metaEl = document.getElementById("sea-condition-meta");
+      if (metaEl) {
+        const rawMeta = `${portInfo.name} • ${portInfo.healthScore || 85}/100 • 12 km/h`;
+        metaEl.setAttribute("data-orig-meta", rawMeta);
+        metaEl.textContent = (window.ORCA_I18N && typeof window.ORCA_I18N.translatePortText === "function")
+          ? window.ORCA_I18N.translatePortText(rawMeta)
+          : rawMeta;
+      }
     }
 
     if (typeof window.updateCoastalPortWeather === "function") {
@@ -125,7 +134,10 @@
     if (headerName) {
       const portInfo = PORT_DATA_MAP[station];
       const pName = portInfo ? portInfo.name : (payload && payload.station ? `${payload.station.name} (${payload.station.region})` : station);
-      headerName.textContent = pName;
+      headerName.setAttribute("data-orig-port", pName);
+      headerName.textContent = (window.ORCA_I18N && typeof window.ORCA_I18N.translatePortText === "function")
+        ? window.ORCA_I18N.translatePortText(pName)
+        : pName;
     }
   }
 

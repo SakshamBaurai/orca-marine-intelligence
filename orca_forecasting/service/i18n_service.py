@@ -24,15 +24,22 @@ ORCAAgent without duplicating or altering core oceanographic intelligence logic:
 
 from __future__ import annotations
 
+import io
 import re
 import urllib.parse
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
 
+try:
+    import speech_recognition as sr
+except ImportError:
+    sr = None
+
 SUPPORTED_LANGUAGES: Dict[str, str] = {
     "en": "English",
-    "hi": "Hindi",
+    "hi": "Hindi / Hinglish",
+    "hinglish": "Hinglish",
     "mr": "Marathi",
     "gu": "Gujarati",
     "ml": "Malayalam",
@@ -43,6 +50,22 @@ SUPPORTED_LANGUAGES: Dict[str, str] = {
     "pa": "Punjabi",
     "or": "Odia",
 }
+
+STT_BCP47_MAP: Dict[str, str] = {
+    "en": "en-IN",
+    "hi": "hi-IN",
+    "hinglish": "hi-IN",
+    "mr": "mr-IN",
+    "gu": "gu-IN",
+    "ml": "ml-IN",
+    "ta": "ta-IN",
+    "te": "te-IN",
+    "kn": "kn-IN",
+    "bn": "bn-IN",
+    "pa": "pa-IN",
+    "or": "or-IN",
+}
+
 
 # Unicode script ranges for automatic script detection when user types in native script
 SCRIPT_RANGES: List[Tuple[int, int, str]] = [
@@ -184,6 +207,11 @@ OFFLINE_INTENT_KEYWORDS: Dict[str, str] = {
     "ମାଛ": "fishing spot",
     "machli": "fishing spot",
     "machhli": "fishing spot",
+    "machli pakadne": "fishing spot",
+    "machhli pakadne": "fishing spot",
+    "macchi": "fishing spot",
+    "machhi": "fishing spot",
+    "shikar": "fishing spot",
     # Weather & Safety
     "मौसम": "weather",
     "हवामान": "weather",
@@ -196,6 +224,10 @@ OFFLINE_INTENT_KEYWORDS: Dict[str, str] = {
     "ਮੌਸਮ": "weather",
     "ପାଣିପାଗ": "weather",
     "mausam": "weather",
+    "hawa": "wind weather",
+    "toofan": "storm safety",
+    "lehar": "waves sea condition",
+    "lehrein": "waves sea condition",
     "सुरक्षित": "safe",
     "सलामत": "safe",
     "സുരക്ഷിത": "safe",
@@ -205,6 +237,7 @@ OFFLINE_INTENT_KEYWORDS: Dict[str, str] = {
     "নিরাপদ": "safe",
     "ਸੁਰੱਖਿਅਤ": "safe",
     "ସୁରକ୍ଷିତ": "safe",
+    "surakshit": "safe",
     # SST / Temperature
     "तापमान": "sea surface temperature SST",
     "તાપમાન": "sea surface temperature SST",
@@ -215,6 +248,12 @@ OFFLINE_INTENT_KEYWORDS: Dict[str, str] = {
     "তাপমাত্রা": "sea surface temperature SST",
     "ਤਾਪਮਾਨ": "sea surface temperature SST",
     "ତାପମାତ୍ରା": "sea surface temperature SST",
+    "tapman": "sea surface temperature SST",
+    "taapman": "sea surface temperature SST",
+    "paani ka tapman": "sea surface temperature SST",
+    "pani ka tapman": "sea surface temperature SST",
+    "garam": "temperature SST",
+    "thanda": "temperature SST",
     # Distance
     "दूरी": "calculate distance",
     "कितना दूर": "how far distance",
@@ -225,6 +264,11 @@ OFFLINE_INTENT_KEYWORDS: Dict[str, str] = {
     "தூரம்": "calculate distance",
     "దూరం": "calculate distance",
     "দূরত্ব": "calculate distance",
+    "doori": "calculate distance",
+    "duri": "calculate distance",
+    "kitna door": "how far distance",
+    "kitni door": "how far distance",
+    "kitna dur": "how far distance",
     # Marine Health
     "स्वास्थ्य": "marine health index",
     "आरोग्य": "marine health index",
@@ -233,10 +277,12 @@ OFFLINE_INTENT_KEYWORDS: Dict[str, str] = {
     "ಆರೋಗ್ಯ": "marine health index",
     "ஆரோக்கியம்": "marine health index",
     "ఆరోగ్యం": "marine health index",
+    "sehat": "marine health index",
+    "samudra sehat": "marine health index",
     # Upwelling
     "अपवेलिंग": "upwelling",
     "అప్‌వెల్లింగ్": "upwelling",
-    # Proximity
+    # Proximity & Hinglish helpers
     "पास": "near",
     "नजदीक": "near",
     "जवळ": "near",
@@ -249,11 +295,67 @@ OFFLINE_INTENT_KEYWORDS: Dict[str, str] = {
     "কাছে": "near",
     "ਨੇੜੇ": "near",
     "ପାଖରେ": "near",
+    "ke paas": "near",
+    "ke pas": "near",
+    "nazdeek": "near",
+    "najdeek": "near",
 }
+
+# Common Hinglish (Romanized Hindi) word/phrase normalizer for accurate intent parsing
+HINGLISH_WORD_REPLACEMENTS: List[Tuple[str, str]] = [
+    (r"\bmachh?li\s+pakadne\s+(ki|ka|ke)\s+(jagah|kshetra|area|zone|spot)\b", "best fishing spot"),
+    (r"\bmachh?li\s+(kahan|kidhar)\s+milegi\b", "where are the best fishing spots"),
+    (r"\bmachh?li\b", "fishing"),
+    (r"\bmacch?i\b", "fishing"),
+    (r"\bsabse\s+acch?[aei]\b", "best"),
+    (r"\bacch?[aei]\s+jagah\b", "best spot"),
+    (r"\bjagah\b", "spot"),
+    (r"\bkshetra\b", "zone"),
+    (r"\bke\s+paas\b", "near"),
+    (r"\bke\s+pas\b", "near"),
+    (r"\bnazdeek\b", "near"),
+    (r"\bmausam\s+kaisa\s+hai\b", "how is the sea weather and safety"),
+    (r"\bmausam\b", "weather"),
+    (r"\bsamudra\b", "sea"),
+    (r"\bsagar\b", "sea"),
+    (r"\bpaa?ni\s+ka\s+taa?pman\b", "sea surface temperature SST"),
+    (r"\btaa?pman\b", "sea surface temperature SST"),
+    (r"\bkitn[aei]\s+doo?r\b", "how far is the distance"),
+    (r"\bdoo?ri\b", "distance"),
+    (r"\bsurakshit\b", "safe"),
+    (r"\bkahan\s+hai\b", "where is"),
+    (r"\bkaisa\s+hai\b", "how is"),
+    (r"\bbatao\b", "tell me"),
+    (r"\bbataye\b", "tell me"),
+    (r"\bdikhao\b", "show me"),
+]
 
 # In-memory translation cache: (text, target_lang) -> translated_text
 _TRANSLATION_CACHE: Dict[Tuple[str, str], str] = {}
 _MAX_CACHE_SIZE = 2000
+
+
+def _is_hinglish_text(text: str) -> bool:
+    """Return True if text is ASCII Roman script containing recognizable Hinglish words."""
+    if not text or not all(ord(c) < 128 for c in text):
+        return False
+    markers = {
+        "machli", "machhli", "macchi", "mausam", "paas", "pas", "jagah", "kahan",
+        "kaisa", "kaise", "hai", "hain", "mein", "मेरा", "batao", "bataye", "dikhao",
+        "paani", "pani", "tapman", "taapman", "door", "doori", "duri", "kitna",
+        "kitni", "sabse", "acha", "achi", "achha", "accha", "surakshit", "samudra",
+        "sagar", "lehar", "hawa", "aaj", "abhi", "konsa", "kaunsa", "kya", "se", "ke"
+    }
+    words = set(re.findall(r"[a-zA-Z]+", text.lower()))
+    return len(words.intersection(markers)) >= 1
+
+
+def _normalize_hinglish_to_english(text: str) -> str:
+    """Convert common Hinglish phrases into clear English tokens prior to translation."""
+    out = text
+    for pattern, repl in HINGLISH_WORD_REPLACEMENTS:
+        out = re.sub(pattern, repl, out, flags=re.IGNORECASE)
+    return out
 
 
 def detect_script_language(text: str, requested_lang: Optional[str] = None) -> str:
@@ -279,10 +381,20 @@ def detect_script_language(text: str, requested_lang: Optional[str] = None) -> s
         # Disambiguate Devanagari between Hindi ('hi') and Marathi ('mr')
         if detected == "hi" and req == "mr":
             return "mr"
+        # If user selected hinglish but typed Devanagari, respond in Hindi
+        if detected == "hi" and req == "hinglish":
+            return "hi"
         # If user explicitly selected a language matching the script or left it on 'en'
         if req == "en":
             return detected
         return req
+
+    # If text is ASCII Hinglish and user is on 'en' or 'hi' or 'hinglish'
+    if _is_hinglish_text(text):
+        if req == "hinglish":
+            return "hinglish"
+        if req in ("en", "hi"):
+            return "hi"
 
     return req
 
@@ -328,8 +440,58 @@ def _google_translate_sync(text: str, target_lang: str, source_lang: str = "auto
     return None
 
 
+def _convert_english_to_hinglish(text: str) -> str:
+    """Convert English ORCA response text into natural Romanized Hindi (Hinglish) while preserving numbers/units."""
+    if not text:
+        return text
+    out = text
+    replacements = [
+        (r"(\d+)\s+suitable fishing zones found\s*\(High Tier\)", r"\1 sabse ache machli pakadne ke kshetra mile (High Tier)"),
+        (r"(\d+)\s+suitable fishing zones found", r"\1 machli pakadne ke upyukt kshetra mile"),
+        (r"from\s+\*\*(.*?)\*\*\s*\(12 NM regulatory boundary enforced\)", r"**\1** se (12 NM samudri seema ke bahar surakshit)"),
+        (r"12 NM regulatory boundary enforced", "12 NM samudri seema laagu"),
+        (r"HIGH\s*/\s*FAVORABLE", "UTTAM / ANUKOOL (High)"),
+        (r"High\s*/\s*Favorable", "Uttam / Anukool"),
+        (r"MODERATE\s*/\s*FAIR", "MADHYAM / THEEK (Moderate)"),
+        (r"Best Fishing Spots near", "Ke Paas Machli Pakadne Ke Best Spots —"),
+        (r"Recommended Fishing Grounds near", "Ke Paas Machli Pakadne Ke Best Kshetra —"),
+        (r"Potential Fishing Zones \(PFZ\)", "Machli Pakadne Ke Kshetra (PFZ)"),
+        (r"Potential Fishing Zone", "Machli Pakadne Ka Kshetra (PFZ)"),
+        (r"Primary Recommendation", "Sabse Best Spot (01)"),
+        (r"Secondary Option", "Doosra Vikalp (02)"),
+        (r"Tertiary Option", "Teesra Vikalp (03)"),
+        (r"Sea Surface Temperature \(SST\)", "Paani Ka Tapman (SST)"),
+        (r"Sea Surface Temperature", "Paani Ka Tapman (SST)"),
+        (r"Marine Health Index \(MHI\)", "Samudra Sehat Score (MHI)"),
+        (r"Marine Health Index", "Samudra Sehat Score"),
+        (r"Ocean Health", "Samudra Sehat"),
+        (r"\bHealth\b", "Sehat"),
+        (r"Chlorophyll-a", "Machli Ka Bhojan (Plankton / Chl-a)"),
+        (r"Dissolved Oxygen", "Paani Mein Oxygen (DO)"),
+        (r"SAFE / CALM WATERS", "SURAKSHIT / SHANT SAMUDRA (Safe)"),
+        (r"MODERATE / CAUTION", "SAAVDHAN / Madhyam Lehrein"),
+        (r"ROUGH / UNSAFE", "KHATARNAK / Asurakshit Samudra"),
+        (r"12 NM Boundary Compliant", "12 NM Se Bahar Surakshit Kshetra"),
+        (r"beyond the 12 NM territorial boundary", "12 NM chhote naav kshetra se bahar surakshit samudra mein"),
+        (r"\*\*\[ Take me there \]\*\*", "**[ Mujhe Wahan Le Chalein ]**"),
+        (r"\[ Take me there \]", "[ Mujhe Wahan Le Chalein ]"),
+        (r"Distance:", "Doori (Distance):"),
+        (r"Coordinates:", "GPS Sthan (Coordinates):"),
+        (r"Why this spot:", "Yeh jagah kyun acchi hai:"),
+        (r"Favorable thermal front", "Machli ke liye sahi paani ka tapman"),
+        (r"Active nutrient upwelling", "Achha plankton aur machli ka bhojan"),
+        (r"Optimal", "Uttam (Optimal)"),
+        (r"High Productivity", "Zyada Machli Sambhavna (High)"),
+        (r"Moderate Productivity", "Madhyam Machli Sambhavna"),
+        (r"\bPort\b", "Bandargah"),
+    ]
+    for pat, rep in replacements:
+        out = re.sub(pat, rep, out, flags=re.IGNORECASE)
+    return out
+
+
 def translate_query_to_english(query: str, requested_lang: Optional[str] = "en") -> Tuple[str, str]:
-    """Normalize and translate a user query in any supported language into canonical English.
+    """Normalize and translate a user query in any supported language (including Hinglish) into canonical English.
 
     Returns:
         (english_query, effective_language_code)
@@ -338,6 +500,7 @@ def translate_query_to_english(query: str, requested_lang: Optional[str] = "en")
         return query, (requested_lang or "en")
 
     effective_lang = detect_script_language(query, requested_lang)
+    is_hinglish_input = _is_hinglish_text(query)
 
     # Extract any known ports & domain intents from native script / phonetic tokens first
     detected_ports: List[str] = []
@@ -351,9 +514,9 @@ def translate_query_to_english(query: str, requested_lang: Optional[str] = "en")
         if token in q_lower and eng_intent not in detected_intents:
             detected_intents.append(eng_intent)
 
-    # Check if query is already plain ASCII English without phonetic Hindi/regional words
+    # Check if query is already plain ASCII English without phonetic Hindi/Hinglish/regional words
     is_ascii = all(ord(c) < 128 for c in query)
-    if effective_lang == "en" and is_ascii and not detected_intents:
+    if effective_lang == "en" and is_ascii and not detected_intents and not is_hinglish_input:
         return query, "en"
 
     # Pre-replace native port names so neural translation never garbles Indian port names
@@ -361,6 +524,9 @@ def translate_query_to_english(query: str, requested_lang: Optional[str] = "en")
     for native_name, eng_port in NATIVE_PORT_GAZETTEER.items():
         if native_name in pre_normalized:
             pre_normalized = pre_normalized.replace(native_name, f" {eng_port} ")
+
+    if is_hinglish_input or effective_lang in ("hi", "hinglish"):
+        pre_normalized = _normalize_hinglish_to_english(pre_normalized)
 
     # Call live translation API (auto-detects script OR Romanized Hinglish/regional text)
     api_translated = _google_translate_sync(pre_normalized, target_lang="en", source_lang="auto")
@@ -415,7 +581,8 @@ def _protect_markdown_and_units(text: str) -> Tuple[str, Dict[str, str]]:
 def _restore_markdown_and_units(text: str, placeholders: Dict[str, str], target_lang: str) -> str:
     """Restore protected tokens after translation."""
     take_me_translations = {
-        "hi": "**[ मुझे वहाँ ले चलें ]**",
+        "hi": "**[ मुझे वहाँ ले चलें / Take me there ]**",
+        "hinglish": "**[ Mujhe Wahan Le Chalein ]**",
         "mr": "**[ मला तिथे घेऊन चला ]**",
         "gu": "**[ મને ત્યાં લઈ જાઓ ]**",
         "ml": "**[ എന്നെ അവിടെ എത്തിക്കുക ]**",
@@ -442,6 +609,9 @@ def translate_text(text: str, target_lang: str) -> str:
     if not text or not target_lang or target_lang == "en" or target_lang not in SUPPORTED_LANGUAGES:
         return text
 
+    if target_lang == "hinglish":
+        return _convert_english_to_hinglish(text)
+
     protected_text, placeholders = _protect_markdown_and_units(text)
     translated = _google_translate_sync(protected_text, target_lang=target_lang, source_lang="en")
     if translated:
@@ -450,18 +620,31 @@ def translate_text(text: str, target_lang: str) -> str:
     return text
 
 
-def translate_agent_response(result: Dict[str, Any], target_lang: Optional[str] = "en") -> Dict[str, Any]:
+def translate_agent_response(result: Dict[str, Any], target_lang: Optional[str] = "en", user_query: Optional[str] = None) -> Dict[str, Any]:
     """Translate ORCAAgent response dictionary into target_lang without mutating actions or coordinates."""
     lang = (target_lang or "en").strip().lower()
     if lang == "en" or lang not in SUPPORTED_LANGUAGES:
         return result
 
     out = dict(result)
+    original_en_msg = out.get("message", "")
+
+    # If user selected 'hinglish', provide full Hinglish response
+    if lang == "hinglish":
+        if original_en_msg:
+            out["message"] = _convert_english_to_hinglish(original_en_msg)
+        return out
 
     # 1. Translate main assistant message
-    msg = out.get("message", "")
-    if msg:
-        out["message"] = translate_text(msg, lang)
+    if original_en_msg:
+        hi_msg = translate_text(original_en_msg, lang)
+        # When in Hindi ('hi') mode, also include Hinglish summary if user typed in Hinglish (or as helpful Hinglish part)
+        if lang == "hi":
+            hinglish_part = _convert_english_to_hinglish(original_en_msg)
+            first_line = hinglish_part.split("\n")[0].strip()
+            if first_line:
+                hi_msg = f"{hi_msg}\n\n💬 **Hinglish Summary:** {first_line}"
+        out["message"] = hi_msg
 
     # 2. Translate data card labels (keep values and scientific units intact)
     if isinstance(out.get("data"), list) and out["data"]:
@@ -495,12 +678,52 @@ def translate_agent_response(result: Dict[str, Any], target_lang: Optional[str] 
     return out
 
 
+def transcribe_wav_bytes(wav_bytes: bytes, lang: str = "en") -> str:
+    """Transcribe 16-bit PCM WAV audio bytes using Google Speech Recognition over HTTPS.
+
+    Works across all browsers (Brave, Edge, Chrome, Firefox, Safari) without
+    relying on Chrome-restricted webkitSpeechRecognition network sockets.
+    """
+    if not wav_bytes or len(wav_bytes) < 100:
+        raise ValueError("Empty or too-short audio buffer.")
+    if sr is None:
+        raise RuntimeError("SpeechRecognition package is not installed in backend environment.")
+
+    lang_key = (lang or "en").strip().lower()
+    bcp47 = STT_BCP47_MAP.get(lang_key, "en-IN")
+
+    recognizer = sr.Recognizer()
+    with sr.AudioFile(io.BytesIO(wav_bytes)) as source:
+        audio_data = recognizer.record(source)
+
+    # Primary recognition in selected language
+    try:
+        text = recognizer.recognize_google(audio_data, language=bcp47)
+        if text and text.strip():
+            return text.strip()
+    except sr.UnknownValueError:
+        pass
+
+    # Fallback recognition in en-IN (catches Hinglish / English spoken while in an Indian language mode)
+    if bcp47 != "en-IN":
+        try:
+            text_en = recognizer.recognize_google(audio_data, language="en-IN")
+            if text_en and text_en.strip():
+                return text_en.strip()
+        except sr.UnknownValueError:
+            pass
+
+    raise ValueError("Could not understand audio clearly.")
+
+
 def clean_text_for_speech(text: str) -> str:
     """Strip markdown symbols, action tags, and emojis so TTS reads naturally."""
     if not text:
         return ""
+    # Remove Hinglish Summary footer from Hindi TTS so it doesn't read the message twice
+    s = re.split(r"💬\s*\*?\*?Hinglish Summary:", text)[0]
     # Remove markdown bold/italic/headers
-    s = re.sub(r"\*\*\[.*?\]\*\*", "", text)
+    s = re.sub(r"\*\*\[.*?\]\*\*", "", s)
     s = re.sub(r"[*_#`~>]", "", s)
     # Replace bullets with pauses
     s = s.replace("•", ". ")
@@ -512,7 +735,7 @@ def clean_text_for_speech(text: str) -> str:
     s = s.replace("mg/m³", " milligrams per cubic meter")
     # Strip emojis / astral plane symbols
     s = re.sub(r"[\U00010000-\U0010ffff]", "", s)
-    s = re.sub(r"[🌐🐋🎯🌡️🌊🩺🗺️🐟📏⚖️🌦️⚠️ℹ️✈️🚢📋⚓✓✕]", "", s)
+    s = re.sub(r"[🌐🐋🎯🌡️🌊🩺🗺️🐟📏⚖️🌦️⚠️ℹ️✈️🚢📋⚓✓✕💬]", "", s)
     # Collapse whitespace
     s = re.sub(r"\s+", " ", s).strip()
     return s
@@ -559,7 +782,9 @@ def synthesize_speech_mp3(text: str, lang: str = "en") -> Optional[bytes]:
         return None
 
     tl = (lang or "en").strip().lower()
-    if tl not in SUPPORTED_LANGUAGES:
+    if tl == "hinglish":
+        tl = "hi"
+    elif tl not in SUPPORTED_LANGUAGES:
         tl = "en"
 
     chunks = _split_tts_chunks(clean, max_len=180)
@@ -591,3 +816,4 @@ def synthesize_speech_mp3(text: str, lang: str = "en") -> Optional[bytes]:
     if not audio_buffers:
         return None
     return b"".join(audio_buffers)
+

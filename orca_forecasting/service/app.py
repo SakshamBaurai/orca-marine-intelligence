@@ -28,7 +28,7 @@ from datetime import date
 from typing import List, Optional
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from orca.analytics import annotate
@@ -689,7 +689,9 @@ def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
 
     # 3. Translate response message & cards back into effective language if non-English
     if effective_lang and effective_lang != "en":
-        result = i18n_service.translate_agent_response(result, target_lang=effective_lang)
+        result = i18n_service.translate_agent_response(
+            result, target_lang=effective_lang, user_query=req.message
+        )
 
     return AgentChatResponse(
         session_id=result["session_id"],
@@ -705,11 +707,31 @@ def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
     )
 
 
+@app.post("/api/v1/agent/stt")
+@app.post("/agent/stt")
+async def agent_stt(
+    request: Request,
+    lang: str = Query("en", description="Language code (en, hi, hinglish, mr, gu, ml, ta, te, kn, bn, pa, or)"),
+) -> dict:
+    from . import i18n_service
+
+    wav_bytes = await request.body()
+    if not wav_bytes or len(wav_bytes) < 100:
+        raise HTTPException(status_code=400, detail="Empty audio payload.")
+    try:
+        transcript = i18n_service.transcribe_wav_bytes(wav_bytes=wav_bytes, lang=lang)
+        return {"success": True, "transcript": transcript, "language": lang}
+    except ValueError as exc:
+        return {"success": False, "transcript": "", "detail": str(exc), "language": lang}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Speech recognition error: {exc}")
+
+
 @app.get("/api/v1/agent/tts")
 @app.get("/agent/tts")
 def agent_tts(
     text: str = Query(..., description="Text to synthesize into speech"),
-    lang: str = Query("en", description="Language code (en, hi, mr, gu, ml, ta, te, kn, bn, pa, or)"),
+    lang: str = Query("en", description="Language code (en, hi, hinglish, mr, gu, ml, ta, te, kn, bn, pa, or)"),
 ):
     from fastapi.responses import Response
     from . import i18n_service

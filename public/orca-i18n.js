@@ -19,7 +19,8 @@
 
   const LANGUAGES = [
     { code: "en", name: "English", native: "English", bcp47: "en-IN" },
-    { code: "hi", name: "Hindi", native: "हिन्दी (Hindi)", bcp47: "hi-IN" },
+    { code: "hi", name: "Hindi / Hinglish", native: "हिन्दी / Hinglish (Hindi)", bcp47: "hi-IN" },
+    { code: "hinglish", name: "Hinglish", native: "Hinglish (Roman Hindi)", bcp47: "hi-IN" },
     { code: "mr", name: "Marathi", native: "मराठी (Marathi)", bcp47: "mr-IN" },
     { code: "gu", name: "Gujarati", native: "ગુજરાતી (Gujarati)", bcp47: "gu-IN" },
     { code: "ml", name: "Malayalam", native: "മലയാളം (Malayalam)", bcp47: "ml-IN" },
@@ -34,9 +35,9 @@
   const BCP47_MAP = {};
   LANGUAGES.forEach(l => { BCP47_MAP[l.code] = l.bcp47; });
 
-  // Compact compact array-based dictionary to keep bundle fast & clean
+  // Compact array-based dictionary to keep bundle fast & clean
   // Order of array values: [en, hi, mr, gu, ml, ta, te, kn, bn, pa, or]
-  const LANG_INDEX = { en: 0, hi: 1, mr: 2, gu: 3, ml: 4, ta: 5, te: 6, kn: 7, bn: 8, pa: 9, or: 10 };
+  const LANG_INDEX = { en: 0, hi: 1, mr: 2, gu: 3, ml: 4, ta: 5, te: 6, kn: 7, bn: 8, pa: 9, or: 10, hinglish: 11 };
 
   const DICT = {
     "header.live": [
@@ -332,11 +333,11 @@
       "ମୁମ୍ବାଇ ପାଖରେ ଆଜି ମାଛ ଧରିବା ପାଇଁ କେଉଁ କ୍ଷେତ୍ର ସୁରକ୍ଷିତ?"
     ],
     "ws.chip2": [
-      "🐟 Find nearby fishing zones", "🐟 पास के मछली पकड़ने के क्षेत्र खोजें", "🐟 जवळचे मासेमारी क्षेत्र शोधा", "🐟 નજીકના માછીમારી વિસ્તારો શોધો", "🐟 അടുത്തുള്ള മത്സ്യബന്ധന മേഖലകൾ",
+      "🐟 Find nearby fishing zones", "🐟 पास के मछली क्षेत्र / Hinglish: Machli Spot", "🐟 जवळचे मासेमारी क्षेत्र शोधा", "🐟 નજીકના માછીમારી વિસ્તારો શોધો", "🐟 അടുത്തുള്ള മത്സ്യബന്ധന മേഖലകൾ",
       "🐟 அருகிலுள்ள மீன்பிடி மண்டலங்கள்", "🐟 సమీప చేపల వేట ప్రాంతాలు", "🐟 ಹತ್ತಿರದ ಮೀನುಗಾರಿಕೆ ವಲಯಗಳು", "🐟 কাছাকাছি মাছ ধরার অঞ্চল", "🐟 ਨੇੜਲੇ ਮੱਛੀ ਫੜਨ ਵਾਲੇ ਖੇਤਰ", "🐟 ନିକଟବର୍ତ୍ତୀ ମାଛ ଧରା କ୍ଷେତ୍ର"
     ],
     "ws.chip2_q": [
-      "Show nearby fishing zones", "पास के मछली पकड़ने के क्षेत्र दिखाएं", "जवळचे मासेमारी क्षेत्र दाखवा", "નજીકના માછીમારી વિસ્તારો બતાવો", "അടുത്തുള്ള മത്സ്യബന്ധന മേഖലകൾ കാണിക്കുക",
+      "Show nearby fishing zones", "Mumbai ke paas machli pakadne ki sabse achi jagah kahan hai?", "जवळचे मासेमारी क्षेत्र दाखवा", "નજીકના માછીમારી વિસ્તારો બતાવો", "അടുത്തുള്ള മത്സ്യബന്ധന മേഖലകൾ കാണിക്കുക",
       "அருகிலுள்ள மீன்பிடி மண்டலங்களைக் காட்டு", "సమీప చేపల వేట ప్రాంతాలను చూపించు", "ಹತ್ತಿರದ ಮೀನುಗಾರಿಕೆ ವಲಯಗಳನ್ನು ತೋರಿಸಿ", "কাছাকাছি মাছ ধরার অঞ্চল দেখান", "ਨੇੜਲੇ ਮੱਛੀ ਫੜਨ ਵਾਲੇ ਖੇਤਰ ਦਿਖਾਓ", "ନିକଟବର୍ତ୍ତୀ ମାଛ ଧରା କ୍ଷେତ୍ର ଦେଖାନ୍ତୁ"
     ],
     "ws.chip3": [
@@ -352,12 +353,12 @@
       "⚖️ 12 NM கடல் எல்லை விதி", "⚖️ 12 NM సముద్ర సరిహద్దు నియమం", "⚖️ 12 NM ಸಮುದ್ರ ಗಡಿ ನಿಯಮ", "⚖️ 12 NM সামুদ্রিক সীমানা নিয়ম", "⚖️ 12 NM ਸਮੁੰਦਰੀ ਸੀਮਾ ਨਿਯਮ", "⚖️ 12 NM ସାମୁଦ୍ରିକ ସୀମା ନିୟମ"
     ],
     "ws.chip6": [
-      "🌦️ Mumbai coastal weather", "🌦️ मुंबई तटीय मौसम", "🌦️ मुंबई किनारी हवामान", "🌦️ મુંબઈ કાંઠાનું હવામાન", "🌦️ മുംബൈ തീരദേശ കാലാവസ്ഥ",
+      "🌦️ Mumbai coastal weather", "🌦️ मुंबई तटीय मौसम (Mausam)", "🌦️ मुंबई किनारी हवामान", "🌦️ મુંબઈ કાંઠાનું હવામાન", "🌦️ മുംബൈ തീരദേശ കാലാവസ്ഥ",
       "🌦️ மும்பை கடற்கரை வானிலை", "🌦️ ముంబై తీర వాతావరణం", "🌦️ ಮುಂಬೈ ಕರಾವಳಿ ಹವಾಮಾನ", "🌦️ মুম্বাই উপকূলীয় আবহাওয়া", "🌦️ ਮੁੰਬਈ ਤੱਟਵਰਤੀ ਮੌਸਮ", "🌦️ ମୁମ୍ବାଇ ଉପକୂଳ ପାଣିପାଗ"
     ],
     "ws.welcome": [
       "Operational. Directly coupled to Copernicus Marine Service (CMEMS) numerical models, Sentinel-3 satellite ocean color arrays, and the Maritime Zones of India regulatory boundary.<br/><br/>Ask natural-language queries about fishing grounds, departure routes, coastal ports, or marine ecosystem health.",
-      "सक्रिय। कोपरनिकस मरीन सर्विस (CMEMS) मॉडल, सेंटिनल-3 उपग्रह डेटा और भारतीय समुद्री सीमा (12 NM) से सीधे जुड़ा हुआ।<br/><br/>मछली पकड़ने के क्षेत्रों, बंदरगाह मार्गों, मौसम या समुद्री स्वास्थ्य के बारे में अपनी भाषा में प्रश्न पूछें या माइक (🎙) दबाकर बोलें।",
+      "सक्रिय। कोपरनिकस मरीन सर्विस (CMEMS) मॉडल, सेंटिनल-3 उपग्रह डेटा और भारतीय समुद्री सीमा (12 NM) से सीधे जुड़ा हुआ।<br/><br/>मछली पकड़ने के क्षेत्रों, बंदरगाह मार्गों, मौसम या समुद्री स्वास्थ्य के बारे में <b>हिंदी या Hinglish</b> में प्रश्न पूछें (जैसे: <i>Mumbai ke paas machli pakadne ki safe jagah?</i>) या माइक (🎙) दबाकर बोलें।",
       "सक्रिय. कोपरनिकस मरीन सर्व्हिस (CMEMS), सेंटिनेल-3 उपग्रह डेटा आणि भारतीय सागरी सीमेशी थेट जोडलेले.<br/><br/>मासेमारी क्षेत्र, बंदर मार्ग, हवामान किंवा सागरी आरोग्याबद्दल तुमच्या भाषेत प्रश्न विचारा किंवा माइक (🎙) दाबून बोला.",
       "સક્રિય. કોપરનિકસ મરીન સર્વિસ (CMEMS), સેન્ટિનલ-3 ઉપગ્રહ ડેટા અને ભારતીય દરિયાઈ સીમા (12 NM) સાથે સીધું જોડાયેલું.<br/><br/>માછીમારીના સ્થળો, બંદર માર્ગો, હવામાન અથવા દરિયાઈ સ્વાસ્થ્ય વિશે તમારી ભાષામાં પૂછો અથવા માઇક (🎙) દબાવીને બોલો.",
       "സജീവം. കോപ്പർനിക്കസ് മറൈൻ സർവീസ് (CMEMS), സെന്റിനൽ-3 ഉപഗ്രഹ ഡാറ്റ, ഇന്ത്യൻ സമുദ്ര അതിർത്തി (12 NM) എന്നിവയുമായി നേരിട്ട് ബന്ധിപ്പിച്ചിരിക്കുന്നു.<br/><br/>മത്സ്യബന്ധന മേഖലകൾ, തുറമുഖ പാതകൾ, കാലാവസ്ഥ എന്നിവയെക്കുറിച്ച് മലയാളത്തിൽ ചോദിക്കുക അല്ലെങ്കിൽ മൈക്ക് (🎙) അമർത്തി സംസാരിക്കുക.",
@@ -370,7 +371,7 @@
     ],
     "ws.placeholder": [
       "What would you like to know? e.g. Where should I fish from Mumbai?",
-      "आप क्या जानना चाहते हैं? जैसे: मुंबई के पास मछली पकड़ने के लिए कौन सा क्षेत्र सुरक्षित है?",
+      "हिंदी या Hinglish में पूछें: मुंबई के पास मछली क्षेत्र / Mumbai ke paas machli pakadne ki jagah?",
       "तुम्हाला काय जाणून घ्यायचे आहे? उदा. मुंबईजवळ मासेमारीसाठी कोणते क्षेत्र सुरक्षित आहे?",
       "તમે શું જાણવા માંગો છો? દા.ત. મુંબઈ પાસે માછીમારી માટે કયો વિસ્તાર સુરક્ષિત છે?",
       "നിങ്ങൾക്ക് എന്താണ് അറിയേണ്ടത്? ഉദാ: മുംബൈയ്ക്ക് സമീപം മത്സ്യബന്ധനത്തിന് ഏത് മേഖലയാണ് സുരക്ഷിതം?",
@@ -451,7 +452,7 @@
     ],
     // Departure Modal
     "dep.modal_title": [
-      "Selected Zone & Navigation Inspector", "चयनित क्षेत्र और नेविगेशन निरीक्षक", "निवडलेले क्षेत्र आणि नेव्हिगेशन निरीक्षक", "પસંદ કરેલ વિસ્તાર અને નેવિગેશન નિરીક્ષक", "തിരഞ്ഞെടുത്ത മേഖലയും നാവിഗേഷൻ വിവരങ്ങളും",
+      "Selected Zone & Navigation Inspector", "चयनित क्षेत्र और नेविगेशन निरीक्षक", "निवडलेले क्षेत्र आणि नेव्हिगेशन निरीक्षक", "પસંદ કરેલ વિસ્તાર અને નેવિગેશન નિરીક્ષક", "തിരഞ്ഞെടുത്ത മേഖലയും നാവിഗേഷൻ വിവരങ്ങളും",
       "தேர்ந்தெடுக்கப்பட்ட மண்டலம் & வழிகாட்டி", "ఎంచుకున్న ప్రాంతం & నావిగేషన్ ఇన్‌స్పెక్టర్", "ಆಯ್ದ ವಲಯ ಮತ್ತು ನ್ಯಾವಿಗೇಷನ್ ಇನ್ಸ್‌ಪೆಕ್ಟರ್", "নির্বাচিত অঞ্চল ও নেভিগেশন পরিদর্শক", "ਚੁਣਿਆ ਖੇਤਰ ਅਤੇ ਨੇਵੀਗੇਸ਼ਨ ਇੰਸਪੈਕਟਰ", "ମନୋନୀତ କ୍ଷେତ୍ର ଓ ନାଭିଗେସନ୍ ନିରୀକ୍ଷକ"
     ],
     "dep.close_btn": [
@@ -464,6 +465,188 @@
     ]
   };
 
+  // Dedicated Hinglish UI Dictionary (for "hinglish" Roman Hindi mode)
+  const HINGLISH_DICT = {
+    "header.live": "LIVE TELEMETRY (Chalu)",
+    "header.subtitle": "Samudri Sahayak (Marine AI)",
+    "stats.grid_nodes": "Samudra Grid Nodes",
+    "stats.health_index": "Samudra Sehat Score",
+    "stats.avg_temp": "Ausat Paani Tapman",
+    "stats.avg_do": "Ausat Oxygen (O₂)",
+    "actions.mode_2d": "2D Naksha Dekhein",
+    "actions.mode_3d": "3D Globe Dekhein",
+    "actions.center_view": "Center View",
+    "actions.orbit_off": "Ghoomna: Band",
+    "actions.orbit_on": "Ghoomna: Chalu",
+    "actions.ask_orca": "ORCA SE PUCHEIN",
+    "actions.data_key": "DATA JANKARI",
+    "sea_safety.title": "SAMUDRA SURAKSHA",
+    "sea_safety.safe": "SURAKSHIT / SHANT SAMUDRA",
+    "telemetry.mhi": "Samudra Sehat (Machli Activity)",
+    "telemetry.sst": "Paani Tapman Badlav (SST)",
+    "telemetry.current": "Paani बहाव Speed",
+    "telemetry.chl": "Machli Ka Bhojan (Plankton)",
+    "telemetry.sla": "Samudra Level Aur Lehrein (SLA)",
+    "left.layers_title": "Samudra Condition Layers",
+    "left.layers_sub": "NAKSHE PAR DEKHNE KE LIYE CLICK KAREIN",
+    "metric.health": "Kul Samudra Sehat (Health)",
+    "metric.health_tag": "Best Machli Kshetra",
+    "metric.oxygen": "Paani Oxygen Level (DO)",
+    "metric.oxygen_tag": "Jeevant Paani",
+    "metric.sst": "Paani Ka Tapman (SST)",
+    "metric.ph": "Paani Ki Safai (pH)",
+    "metric.ph_tag": "Saaf Santulan",
+    "metric.chlorophyll": "Machli Ka Bhojan (Plankton / Chl-a)",
+    "metric.chlorophyll_tag": "Feeding Zone",
+    "metric.salinity": "Namak Ka Level (Salinity)",
+    "metric.salinity_tag": "Normal Namak",
+    "left.weather_title": "Bandargah Ka Mausam",
+    "left.weather_sub": "LIVE PORT MAUSAM",
+    "left.air_temp": "Hawa Ka Tapman:",
+    "left.wind_speed": "Hawa Ki Raftar (10m):",
+    "left.humidity": "Nami (Humidity):",
+    "left.filter_title": "Machli Kshetra Filter",
+    "filter.all": "Sabhi Samudri Kshetra",
+    "filter.optimal": "Acche Machli Kshetra (Healthy)",
+    "filter.stressed": "Kam Oxygen / Kharab Kshetra",
+    "right.gps_location": "GPS Sthan:",
+    "right.depth": "Samudra Gehrai:",
+    "right.mhi_title": "ARAB SAGAR MACHLI SEHAT",
+    "route.title": "🧭 MACHLI KSHETRA KA RASTA",
+    "route.active_plot": "CHALU RASTA",
+    "route.departure": "Prasthan Bandargah:",
+    "route.destination": "Manzil Kshetra:",
+    "route.distance": "Doori (Distance):",
+    "route.travel_time": "Yatra Samay:",
+    "route.heading": "Disha (Heading):",
+    "route.clear_btn": "✕ Rasta Hatayein",
+    "bottom.port_label": "BANDARGAH / DEPARTURE HARBOUR:",
+    "legend.title": "Machli Kshetra Aur Samudra Sehat Key",
+    "legend.good": "Accha Machli Kshetra",
+    "legend.moderate": "Madhyam Machli Kshetra",
+    "legend.poor": "Kam Oxygen / Kharab Kshetra",
+    "symbology.title": "Naksha Sanket Aur Spot Vargikaran",
+    "nav_hint": "GHUMANE KE LIYE DRAG KAREIN • ZOOM KE LIYE SCROLL • JANCHNE KE LIYE BEACON CLICK KAREIN",
+    "ws.badge": "ORCA SAMUDRI BUDDHIMATTA COMMAND",
+    "ws.title": "Samudri Intelligence Aur Navigation System (Hinglish)",
+    "ws.return_globe": "Globe Par Wapas Jayein",
+    "ws.suggested": "SUJHAYE GAYE SAWAL (HINGLISH)",
+    "ws.chip1": "🎯 Mumbai ke paas best machli spots",
+    "ws.chip1_q": "Mumbai ke paas machli pakadne ki sabse achi jagah kahan hai?",
+    "ws.chip2": "🐟 Paas ke machli pakadne ke zones",
+    "ws.chip2_q": "Paas ke machli pakadne ke safe zones dikhao",
+    "ws.chip3": "🩺 Sabse acchi sehat wala samudra zone",
+    "ws.chip4": "📏 Mumbai Bandargah se doori",
+    "ws.chip5": "⚖️ 12 NM samudri seema niyam",
+    "ws.chip6": "🌦️ Mumbai bandargah ka mausam",
+    "ws.welcome": "Chalu Hai. Copernicus Marine Service (CMEMS), Sentinel-3 satellite data aur 12 NM Bharatiya samudri seema se seedha juda hua.<br/><br/>Apne sawal <b>Hinglish</b> mein puchein (jaise: <i>Mumbai ke paas machli pakadne ki sabse achi jagah kahan hai?</i>) ya Mic (🎙) daba kar bolein.",
+    "ws.placeholder": "Hinglish mein puchein: e.g. Mumbai ke paas machli pakadne ki sabse achi jagah kahan hai?",
+    "ws.show_globe": "Globe par result dikhao",
+    "ws.take_me": "Mujhe Wahan Le Chalein",
+    "voice.mic_btn": "🎙 Bolein",
+    "voice.listening": "🎙 Sun Raha Hoon...",
+    "voice.processing": "⏳ Samajh Raha Hoon...",
+    "voice.speak_btn": "🔊 Sunein",
+    "voice.stop_btn": "⏹ Rokein",
+    "voice.err_denied": "Mic permission nahi mili. Kripya browser mein Mic allow karein ya type karein.",
+    "voice.err_unsupported": "Is browser mein Voice support nahi hai. Kripya type karein.",
+    "voice.err_unclear": "Awaaz saaf nahi aayi. Kripya Mic daba kar phir se bolein ya type karein.",
+    "dep.modal_title": "Chuna Gaya Kshetra Aur Navigation Inspector",
+    "dep.close_btn": "Band Karein",
+    "dep.plot_btn": "Rasta Banayein Aur Mujhe Wahan Le Chalein"
+  };
+
+  // =========================================================================
+  // COMPREHENSIVE 43-PORT & REGION MULTI-LANGUAGE DICTIONARY
+  // Order: [en, hi, mr, gu, ml, ta, te, kn, bn, pa, or, hinglish]
+  // =========================================================================
+  const PORT_TERMS_DICT = [
+    // Optgroup Headers
+    ["MAJOR WEST COAST PORTS", "प्रमुख पश्चिमी तट बंदरगाह", "प्रमुख पश्चिम किनारपट्टी बंदरे", "મુખ્ય પશ્ચિમ કાંઠાના બંદરો", "പ്രധാന പടിഞ്ഞാറൻ തീര തുറമുഖങ്ങൾ", "முக்கிய மேற்கு கடற்கரை துறைமுகங்கள்", "ప్రధాన పశ్చిమ తీర పోర్టులు", "ಪ್ರಮುಖ ಪಶ್ಚಿಮ ಕರಾವಳಿ ಬಂದರುಗಳು", "প্রধান পশ্চিম উপকূলীয় বন্দর", "ਪ੍ਰਮੁੱਖ ਪੱਛਮੀ ਤੱਟ ਬੰਦਰਗਾਹਾਂ", "ପ୍ରମୁଖ ପଶ୍ଚିମ ଉପକୂଳ ବନ୍ଦର", "PRAMUKH WEST COAST BANDARGAH"],
+    ["GUJARAT COASTLINE", "गुजरात तटरेखा", "गुजरात किनारपट्टी", "ગુજરાત દરિયાકિનારો", "ഗુજરાത്ത് തീരദേശം", "குஜராத் கடற்கரை", "గుజరాత్ తీరప్రాంతం", "ಗುಜರಾತ್ ಕರಾವಳಿ", "গুজরাট উপকূল", "ਗੁਜਰਾਤ ਤੱਟ", "ଗୁଜରାଟ ଉପକୂଳ", "GUJARAT SAMUDRA TAT"],
+    ["MAHARASHTRA / KONKAN", "महाराष्ट्र / कोंकण तट", "महाराष्ट्र / कोकण किनारपट्टी", "મહારાષ્ટ્ર / કોંકણ કાંઠો", "മഹാരാഷ്ട്ര / കൊങ്കൺ തീരം", "மகாராஷ்டிரா / கொங்கன் கடற்கரை", "మహారాష్ట్ర / కొంకణ్ తీరం", "ಮಹಾರಾಷ್ಟ್ರ / ಕೊಂಕಣ ಕರಾವಳಿ", "মহারাষ্ট্র / কোঙ্কন উপকূল", "ਮਹਾਰਾਸ਼ਟਰ / ਕੋਂਕਣ ਤੱਟ", "ମହାରାଷ୍ଟ୍ର / କୋଙ୍କଣ ଉପକୂଳ", "MAHARASHTRA / KONKAN TAT"],
+    ["GOA & KARNATAKA", "गोवा और कर्नाटक", "गोवा आणि कर्नाटक", "ગોવા અને કર્ણાટક", "ഗോവ & കർണാടക", "கோவா & கர்நாடகா", "గోవా & కర్ణాటక", "ಗೋವಾ ಮತ್ತು ಕರ್ನಾಟಕ", "গোয়া ও কর্ণাটক", "ਗੋਆ ਅਤੇ ਕਰਨਾਟਕ", "ଗୋଆ ଓ କର୍ଣ୍ଣାଟକ", "GOA AUR KARNATAKA"],
+    ["SOUTH & EAST COAST", "दक्षिण और पूर्वी तट", "दक्षिण आणि पूर्व किनारपट्टी", "દક્ષિણ અને પૂર્વ કાંઠો", "തെക്ക് & കിഴക്കൻ തീരം", "தெற்கு & கிழக்கு கடற்கரை", "దక్షిణ & తూర్పు తీరం", "ದಕ್ಷಿಣ ಮತ್ತು ಪೂರ್ವ ಕರಾವಳಿ", "দক্ষিণ ও পূর্ব উপকূল", "ਦੱਖਣੀ ਅਤੇ ਪੂਰਬੀ ਤੱਟ", "ଦକ୍ଷିଣ ଓ ପୂର୍ବ ଉପକୂଳ", "DAKSHIN AUR PURVI TAT"],
+
+    // Compound Port Phrases (matched before individual words)
+    ["New Mangalore Port", "न्यू मैंगलोर बंदरगाह", "न्यू मंगळूर बंदर", "ન્યૂ મેંગલોર બંદર", "ന്യൂ മംഗലാപുരം തുറമുഖം", "நியூ மங்களூர் துறைமுகம்", "న్యూ మంగళూరు పోర్ట్", "ನವ ಮಂಗಳೂರು ಬಂದರು", "নিউ ম্যাঙ্গালোর বন্দর", "ਨਿਊ ਮੈਂਗਲੋਰ ਬੰਦਰਗਾਹ", "ନ୍ୟୁ ମାଙ୍ଗାଲୋର ବନ୍ଦର", "New Mangalore Bandargah"],
+    ["Fish Harbour", "मत्स्य बंदरगाह", "मासेमारी बंदर", "માછીમારી બંદર", "മത്സ്യബന്ധന തുറമുഖം", "மீன்பிடி துறைமுகம்", "చేపల హార్బర్", "ಮೀನುಗಾರಿಕೆ ಬಂದರು", "মৎস্য বন্দর", "ਮੱਛੀ ਬੰਦਰਗਾਹ", "ମତ୍ସ୍ୟ ବନ୍ଦର", "Machli Bandargah"],
+    ["Deep-Sea Port", "गहरे समुद्र का बंदरगाह", "खोल समुद्र बंदर", "ઊંડા સમુદ્રનું બંદર", "ആഴക്കടൽ തുറമുഖം", "ஆழ்கடல் துறைமுகம்", "లోతైన సముద్ర పోర్ట్", "ಆಳ ಸಮುದ್ರದ ಬಂದರು", "গভীর সমুদ্র বন্দর", "ਡੂੰਘੇ ਸਮੁੰਦਰ ਦੀ ਬੰਦਰਗਾਹ", "ଗଭୀର ସମୁଦ୍ର ବନ୍ଦର", "Gehra Samudra Bandargah"],
+    ["Deendayal Port", "दीनदयाल बंदरगाह", "दीनदयाळ बंदर", "દીનદયાળ પોર્ટ", "ദീൻദയാൽ തുറമുഖം", "தீன்தயாள் துறைமுகம்", "దీన్‌దయాళ్ పోర్ట్", "ದೀನ್ ದಯಾಳ್ ಬಂದರು", "দীনদয়াল বন্দর", "ਦੀਨਦਿਆਲ ਬੰਦਰਗਾਹ", "ଦୀନଦୟାଲ ବନ୍ଦର", "Deendayal Bandargah"],
+    ["Live Weather", "लाइव मौसम", "थेट हवामान", "લાઇવ હવામાન", "തത്സമയ കാലാവസ്ഥ", "நேரடி வானிலை", "లైవ్ వాతావరణం", "ಲೈವ್ ಹವಾಮಾನ", "লাইভ আবহাওয়া", "ਲਾਈਵ ਮੌਸਮ", "ଲାଇଭ୍ ପାଣିପାଗ", "Live Mausam"],
+
+    // All 43 Coastal Ports
+    ["Thiruvananthapuram", "तिरुवनंतपुरम", "तिरुवनंतपुरम", "તિરુવનંતપુરમ", "തിരുവനന്തപുരം", "திருவனந்தபுரம்", "తిరువనంతపురం", "ತಿರುವನಂತಪುರಂ", "তিরুবনন্তপুরম", "ਤਿਰੂਵਨੰਤਪੁਰਮ", "തിରୁവനന്തപുരମ", "Thiruvananthapuram"],
+    ["Visakhapatnam", "विशाखापत्तनम", "विशाखापट्टणम", "વિશાખાપટ્ટનમ", "വിശാഖപട്ടണം", "விசாகப்பட்டினம்", "విశాఖపట్నం", "ವಿಶಾಖಪಟ್ಟಣಂ", "বিশাখাপত্তনম", "ਵਿਸ਼ਾਖਾਪਟਨਮ", "ବିଶାଖାପାଟଣା", "Visakhapatnam"],
+    ["Thoothukudi", "थूथुकुडी", "थूथुकुडी", "થૂથુકુડી", "തൂത്തുക്കുടി", "தூத்துக்குடி", "తూత్తుకుడి", "ತೂತ್ತುಕುಡಿ", "তুতিকোরিন", "ਥੂਥੁਕੁਡੀ", "ତୁତିକୋରିନ୍", "Thoothukudi"],
+    ["Trivandrum", "त्रिवेंद्रम", "त्रिवेंद्रम", "ત્રિવેન્દ્રમ", "തിരുവനന്തപുരം", "திருவனந்தபுரம்", "ట్రివేండ్రం", "திருവനന്തപുരം", "ত্রিবান্দ্রম", "ਤ੍ਰਿਵੇਂਦਰਮ", "ତ୍ରିଭାନ୍ଦ୍ରମ୍", "Trivandrum"],
+    ["Vizhinjam", "विझिंजम", "विझिंजम", "વિઝિંજમ", "വിഴിഞ്ഞം", "விழிஞ்ஞம்", "విజింజం", "ವಿಳಿಂಜಂ", "ভিজিনজাম", "ਵਿਝਿੰਜਮ", "ଭିଜିଞ୍ଜମ୍", "Vizhinjam"],
+    ["Kundapura", "कुंदापुरा", "कुंदापूर", "કુંદાપુરા", "കുന്ദാപുര", "குந்தாப்புரா", "కుందాపుర", "ಕುಂದಾಪುರ", "কুন্দাপুরা", "ਕੁੰਦਾਪੁਰਾ", "କୁନ୍ଦାପୁରା", "Kundapura"],
+    ["Vijaydurg", "विजयदुर्ग", "विजयदुर्ग", "વિજયદુર્ગ", "വിജയദുർഗ്", "விஜயதுர்க்", "విజయదుర్గ్", "ವಿಜಯದುರ್ಗ", "বিজয়দুর্গ", "ਵਿਜੇਦੁਰਗ", "ବିଜୟଦୁର୍ଗ", "Vijaydurg"],
+    ["Ratnagiri", "रत्नागिरी", "रत्नागिरी", "રત્નાગિરી", "രത്നഗിരി", "ரத்னகிரி", "రత్నగిరి", "ರತ್ನಗಿರಿ", "রত্নাগিরি", "ਰਤਨਾਗਿਰੀ", "ରତ୍ନଗିରି", "Ratnagiri"],
+    ["Mangaluru", "मंगलुरु", "मंगळूर", "મંગલુરુ", "മംഗളൂരു", "மங்களூரு", "మంగళూరు", "ಮಂಗಳೂರು", "ম্যাঙ্গালুরু", "ਮੰਗਲੁਰੂ", "ମାଙ୍ଗାଲୁରୁ", "Mangaluru"],
+    ["Mangalore", "मैंगलोर", "मंगळूर", "મેંગલોર", "മംഗലാപുരം", "மங்களூர்", "మంగళూరు", "ಮಂಗಳೂರು", "ম্যাঙ্গালোর", "ਮੈਂਗਲੋਰ", "ମାଙ୍ଗାଲୋର", "Mangalore"],
+    ["Bhavnagar", "भावनगर", "भावनगर", "ભાવનગર", "ഭാവ്നഗർ", "பாவ்நகர்", "భావ్‌నగర్", "ಭಾವನಗರ", "ভাবনগর", "ਭਾਵਨਗਰ", "ଭାବନଗର", "Bhavnagar"],
+    ["Porbandar", "पोरबंदर", "पोरबंदर", "પોરબંદર", "പോർബന്ദർ", "போர்பந்தர்", "పోర్‌బందర్", "ಪೋರ್‌ಬಂದರ್", "পোরবন্দর", "ਪੋਰਬੰਦਰ", "ପୋରବନ୍ଦର", "Porbandar"],
+    ["Mormugao", "मोरमुगाओ", "मुरगाव", "મોરમુગાઓ", "മോർമുഗാവോ", "மோர்முகாவ்", "మోర్ముగావ్", "ಮೋರ್ಮುಗಾವೋ", "মোরমুগাঁও", "ਮੋਰਮੁਗਾਓ", "ମୋରମୁগাଓ", "Mormugao"],
+    ["Honnavar", "होन्नावर", "होन्नावर", "હોન્નાવર", "ഹൊന്നാവർ", "ஹொன்னாவர்", "హొన్నావర్", "ಹೊನ್ನಾವರ", "হোন্নাভর", "ਹੋਨਾਵਰ", "ହୋన్నాବର", "Honnavar"],
+    ["Kakinada", "काकीनाडा", "काकीनाडा", "કાકીનાડા", "കാക്കിനട", "காக்கிநாடா", "కాకినాడ", "ಕಾಕಿನಾಡ", "কাকিনাড়া", "ਕਾਕੀਨਾਡਾ", "କାକିନାଡା", "Kakinada"],
+    ["Jafrabad", "जाफराबाद", "जाफराबाद", "જાફરાબાદ", "ജാഫ്രാബാദ്", "ஜாஃப்ராபாத்", "జాఫ్రాబాద్", "ಜಾಫ್ರಾಬಾದ್", "জাফরাবাদ", "ਜਾਫਰਾਬਾਦ", "ଜାଫ୍ରାବାଦ", "Jafrabad"],
+    ["Navlakhi", "नवलाखी", "नवलाखी", "નવલાખી", "നവ്ലാഖി", "நவ்லாகி", "నవ్లాఖి", "ನವ್ಲಾಖಿ", "নবলাখি", "ਨਵਲਾਖੀ", "ନବଲାଖୀ", "Navlakhi"],
+    ["Nhava Sheva", "न्हावा शेवा", "न्हावा शेवा", "ન્હાવા શેવા", "നവ ഷേവ", "நவ சேவா", "న్హావా షేవా", "ನ್ಹಾವಾ ಶೇವಾ", "নব সেবা", "ਨ्हाਵਾ ਸ਼ੇਵਾ", "ନ୍ହାଭା ଶେଭା", "Nhava Sheva"],
+    ["Pipavav", "पीपावाव", "पिपावाव", "પીપાવાવ", "പിപാവാവ്", "பிபாவாவ்", "పిపావావ్", "ಪಿಪಾವಾವ್", "পিপাভাভ", "ਪੀਪਾਵਾਵ", "ପିପାଭାବ", "Pipavav"],
+    ["Veraval", "वेरावल", "वेरावळ", "વેરાવળ", "വേരാവൽ", "வெராவல்", "వెరావల్", "ವೆರಾವಲ್", "ভেরাভাল", "ਵੇਰਾਵਲ", "ଭେରାଭାଲ୍", "Veraval"],
+    ["Mangrol", "मांगरोल", "मांगरोळ", "માંગરોળ", "മംഗ്രോൾ", "மங்க்ரோல்", "మంగ్రోల్", "ಮಂಗ್ರೋಲ್", "মাংরোল", "ਮਾਂਗਰੋਲ", "ମାଙ୍ଗରୋଲ୍", "Mangrol"],
+    ["Alibaug", "अलीबाग", "अलिबाग", "અલીબાગ", "അലിബാഗ്", "அலிபாக்", "అలీబాగ్", "ಅಲಿಬಾಗ್", "আলিবাগ", "ਅਲੀਬਾਗ", "ଆଲିବାଗ୍", "Alibaug"],
+    ["Bhatkal", "भटकल", "भटकळ", "ભટકલ", "ഭട്കൽ", "பட்கல்", "భట్కల్", "ಭಟ್ಕಳ", "ভাটকল", "ਭਟਕਲ", "ଭଟକଲ୍", "Bhatkal"],
+    ["Chennai", "चेन्नई", "चेन्नई", "ચેન્નાઈ", "ചെന്നൈ", "சென்னை", "చెన్నై", "ಚೆನ್ನೈ", "চেন্নাই", "ਚੇਨਈ", "ଚେନ୍ନାଇ", "Chennai"],
+    ["Paradip", "पारादीप", "पारादीप", "પારાદીપ", "പാരാദീപ്", "பாரাদீப்", "పారాదీప్", "ಪಾರಾದೀಪ್", "পারাদ্বীপ", "ਪਾਰਾਦੀਪ", "ପାରାଦୀପ", "Paradip"],
+    ["Kandla", "कांडला", "कांडला", "કંડલા", "കാണ്ഡ്ല", "காண்ட்லா", "కాండ్లా", "ಕಾಂಡ್ಲಾ", "কান্ডলা", "ਕਾਂਡਲਾ", "କାଣ୍ଡଲା", "Kandla"],
+    ["Mundra", "मुंद्रा", "मुंद्रा", "મુન્દ્રા", "മുന്ദ്ര", "முந்த்ரா", "ముంద్రా", "ಮುಂದ್ರಾ", "মুন্দ্রা", "ਮੁੰਦਰਾ", "ମୁନ୍ଦ୍ରା", "Mundra"],
+    ["Hazira", "हजीरा", "हजीरा", "હજીરા", "ഹസിറ", "ஹசிரா", "హజీరా", "ಹಜಿರಾ", "হাজিরা", "ਹਜ਼ੀਰਾ", "ହାଜିରା", "Hazira"],
+    ["Mumbai", "मुंबई", "मुंबई", "મુંબઈ", "മുംബൈ", "மும்பை", "ముంబై", "ಮುಂಬೈ", "মুম্বাই", "ਮੁੰਬਈ", "ମୁମ୍ବାଇ", "Mumbai"],
+    ["Jakhau", "जखौ", "जखौ", "જખૌ", "ജഖൗ", "ஜகாவ்", "జఖౌ", "ಜಖೌ", "জাখাউ", "ਜਖੌ", "ଜଖାଉ", "Jakhau"],
+    ["Mandvi", "मांडवी", "मांडवी", "માંડવી", "മാണ്ഡ്വി", "மாண்ட்வி", "మాండ్వి", "ಮಾಂಡ್ವಿ", "মান্ডভি", "ਮਾਂਡਵੀ", "ମାଣ୍ଡଭୀ", "Mandvi"],
+    ["Salaya", "सलाया", "सलाया", "સલાયા", "സലായ", "சலாயா", "సలాయా", "ಸಲಾಯಾ", "সালায়া", "ਸਲਾਇਆ", "ସଲାୟା", "Salaya"],
+    ["Dabhol", "दाभोल", "दाभोळ", "દાભોલ", "ദാഭോൽ", "தாபோல்", "దాభోల్", "ದಾಭೋಲ್", "দাভোল", "ਦਾਭੋਲ", "ଦାଭୋଲ୍", "Dabhol"],
+    ["Jaigad", "जयगढ़", "जयगड", "જયગઢ", "ജയ്ഗഡ്", "ஜெய்கட்", "జైగడ్", "ಜೈಗಡ್", "জয়গড়", "ਜੈਗੜ੍ਹ", "ଜୟଗଡ଼", "Jaigad"],
+    ["Devgad", "देवगढ़", "देवगड", "દેવગઢ", "ദേവ്ഗഡ്", "தேவ்கட்", "దేవ్‌గడ్", "ದೇವಗಡ", "দেওগড়", "ਦੇਵਗੜ੍ਹ", "ଦେବଗଡ଼", "Devgad"],
+    ["Malvan", "मालवण", "मालवण", "માલવણ", "മാൽവൺ", "மால்வன்", "మాల్వన్", "ಮಾಲ್ವಣ್", "মালভান", "ਮਾਲਵਣ", "ମାଲଭନ୍", "Malvan"],
+    ["Panaji", "पणजी", "पणजी", "પણજી", "പനജി", "பனாஜி", "పనాజీ", "ಪಣಜಿ", "পানাজি", "ਪਣਜੀ", "ପାଣାଜୀ", "Panaji"],
+    ["Karwar", "कारवार", "कारवार", "કારવાર", "കാർവാർ", "கார்வார்", "కార్వార్", "ಕಾರವಾರ", "কারওয়ার", "ਕਾਰਵਾਰ", "କାରୱାର୍", "Karwar"],
+    ["Kollam", "कोल्लम", "कोल्लम", "કોલ્લમ", "കൊല്ലം", "கொல்லம்", "కొల్లం", "ಕೊಲ್ಲಂ", "কোল্লাম", "ਕੋਲਮ", "କୋଲାମ୍", "Kollam"],
+    ["Kochi", "कोच्चि", "कोची", "કોચી", "കൊച്ചി", "கொச்சி", "కొచ్చి", "ಕೊಚ್ಚಿ", "কোচি", "ਕੋਚੀ", "କୋଚି", "Kochi"],
+    ["Sikka", "सिक्का", "सिक्का", "સિક્કા", "സിക്ക", "சிக்கா", "సిక్కా", "ಸಿಕ್ಕಾ", "সিক্কা", "ਸਿੱਕਾ", "ସିକ୍କା", "Sikka"],
+    ["Alang", "अलंग", "अलंग", "અલંગ", "അലംഗ്", "அலங்", "అలాంగ్", "ಅಲಂಗ್", "আলাং", "ਅਲੰਗ", "ଅଲଙ୍ଗ", "Alang"],
+    ["Dahej", "दहेज", "दहेज", "દહેજ", "ദഹേജ്", "தஹேஜ்", "దహేజ్", "ದಹೇಜ್", "দাহেজ", "ਦਹੇਜ", "ଦହେଜ୍", "Dahej"],
+    ["Daman", "दमन", "दमण", "દમણ", "ദമൻ", "தமன்", "డామన్", "ದಮನ್", "দমন", "ਦਮਨ", "ଦାମନ୍", "Daman"],
+    ["Dighi", "दिघी", "दिघी", "દિઘી", "ദിഘി", "திகி", "దిఘి", "ದಿಘಿ", "দিঘি", "ਦਿਘੀ", "ଦିଘି", "Dighi"],
+    ["Tadri", "तद्री", "तद्री", "તદ્રી", "തദ്രി", "தத்ரி", "తద్రి", "ತದ್ರಿ", "তাদ্রি", "ਤਦਰੀ", "ତଦ୍ରି", "Tadri"],
+    ["Malpe", "मालपे", "मालपे", "માલ્પે", "മാൽപെ", "மல்பே", "మాల్పే", "ಮಲ್ಪೆ", "মালপে", "ਮਾਲਪੇ", "ମାଲପେ", "Malpe"],
+    ["Udupi", "उडुपी", "उडुपी", "ઉડુપી", "ഉഡുപ്പി", "உடுப்பி", "ఉడుపి", "ಉಡುಪಿ", "উদুপি", "ਉਡੁਪੀ", "ଉଡୁପି", "Udupi"],
+    ["Bedi", "बेदी", "बेदी", "બેડી", "ബേഡി", "பேடி", "బేడి", "ಬೇಡಿ", "বেদি", "ਬੇਦੀ", "ବେଦୀ", "Bedi"],
+    ["Okha", "ओखा", "ओखा", "ઓખા", "ഓഖ", "ஓகா", "ఓఖా", "ಓಖಾ", "ওখা", "ਓਖਾ", "ଓଖା", "Okha"],
+    ["JNPT", "जेएनपीटी", "जेएनपीटी", "જેએનપીટી", "ജെഎൻപിടി", "ஜேஎன்பிடி", "జెఎన్‌పిటి", "ಜೆಎನ್‌ಪಿಟಿ", "জেএনপিটি", "ਜੇਐਨਪੀਟੀ", "ଜେଏନପିଟି", "JNPT"],
+    ["Goa", "गोवा", "गोवा", "ગોવા", "ഗോവ", "கோவா", "గోవా", "ಗೋವಾ", "গোয়া", "ਗੋਆ", "ଗୋଆ", "Goa"],
+
+    // Regions, States & Suffixes
+    ["Maharashtra", "महाराष्ट्र", "महाराष्ट्र", "મહારાષ્ટ્ર", "മഹാരാഷ്ട്ര", "மகாராஷ்டிரா", "మహారాష్ట్ర", "ಮಹಾರಾಷ್ಟ್ರ", "মহারাষ্ট্র", "ਮਹਾਰਾਸ਼ਟਰ", "ମହାରାଷ୍ଟ୍ର", "Maharashtra"],
+    ["Saurashtra", "सौराष्ट्र", "सौराष्ट्र", "સૌરાષ્ટ્ર", "സൗരാഷ്ട്ര", "சௌராஷ்டிரா", "సౌరాష్ట్ర", "ಸೌರಾಷ್ಟ್ರ", "সৌরাষ্ট্র", "ਸੌਰਾਸ਼ਟਰ", "ସୌରାଷ୍ଟ୍ର", "Saurashtra"],
+    ["Karnataka", "कर्नाटक", "कर्नाटक", "કર્ણાટક", "കർണാടക", "கர்நாடகா", "కర్ణాటక", "ಕರ್ನಾಟಕ", "কর্ণাটক", "ਕਰਨਾਟਕ", "କର୍ଣ୍ଣାଟକ", "Karnataka"],
+    ["Gujarat", "गुजरात", "गुजरात", "ગુજરાત", "ഗുജറാത്ത്", "குஜராத்", "గుజరాత్", "ಗುಜರಾತ್", "গুজরাট", "ਗੁਜਰਾਤ", "ଗୁଜରାଟ", "Gujarat"],
+    ["Kerala", "केरल", "केरळ", "કેરળ", "കേരളം", "கேரளா", "కేరళ", "ಕೇರಳ", "কেরালা", "ਕੇਰਲ", "କେରଳ", "Kerala"],
+    ["Odisha", "ओडिशा", "ओडिशा", "ઓડિશા", "ഒഡീഷ", "ஒடிசா", "ఒడిశా", "ಒಡಿಶಾ", "ওড়িশা", "ਓਡੀਸ਼ਾ", "ଓଡ଼ିଶା", "Odisha"],
+    ["Kutch", "कच्छ", "कच्छ", "કચ્છ", "കച്ച്", "கட்ச்", "కచ్", "ಕಚ್", "কচ্ছ", "ਕੱਛ", "କଚ୍ଛ", "Kutch"],
+    ["Surat", "सूरत", "सुरत", "સુરત", "സൂറത്ത്", "சூரத்", "సూరత్", "ಸೂರತ್", "সুরাট", "ਸੂਰਤ", "ସୁରଟ", "Surat"],
+    ["Dwarka", "द्वारका", "द्वारका", "દ્વારકા", "ദ്വാരക", "துவாரகா", "ద్వారక", "ದ್ವಾರಕಾ", "দ্বারকা", "ਦੁਆਰਕਾ", "ଦ୍ୱାରକା", "Dwarka"],
+    ["Jamnagar", "जामनगर", "जामनगर", "જામનગર", "ജാംനഗർ", "ஜாம்நகர்", "జామ్‌నగర్", "ಜಾಮ್‌ನಗರ", "জামনগর", "ਜਾਮਨਗਰ", "ଜାମନଗର", "Jamnagar"],
+    ["Sindhudurg", "सिंधुदुर्ग", "सिंधुदुर्ग", "સિંધુદુર્ગ", "സിന്ധുദുർഗ്", "சிந்துதுர்க்", "సింధుదుర్గ్", "ಸಿಂಧುದುರ್ಗ", "সিন্ধুদুর্গ", "ਸਿੰਧੂਦੁਰਗ", "ସିନ୍ଧୁଦୁର୍ଗ", "Sindhudurg"],
+    ["Terminal", "टर्मिनल", "टर्मिनल", "ટર્મિનલ", "ടെർമിനൽ", "முனையம்", "టెర్మినల్", "ಟರ್ಮಿನಲ್", "টার্মিনাল", "ਟਰਮੀਨਲ", "ଟର୍ମିନାଲ୍", "Terminal"],
+    ["Weather", "मौसम", "हवामान", "હવામાન", "കാലാവസ്ഥ", "வானிலை", "వాతావరణం", "ಹವಾಮಾನ", "আবহাওয়া", "ਮੌਸਮ", "ପାଣିପାଗ", "Mausam"],
+    ["Forecast", "पूर्वानुमान", "अंदाज", "આગાહી", "പ്രവചനം", "முன்னறிவிப்பு", "సూచన", "ಮುನ್ಸೂಚನೆ", "পূর্বাভাস", "ਭਵਿੱਖਬਾਣੀ", "ପୂର୍ବାନୁମାନ", "Forecast"],
+    ["Port", "बंदरगाह", "बंदर", "બંદર", "തുറമുഖം", "துறைமுகம்", "పోర్ట్", "ಬಂದರು", "বন্দর", "ਬੰਦਰਗਾਹ", "ବନ୍ଦର", "Bandargah"]
+  ];
+
   let currentLang = "en";
   try {
     const saved = localStorage.getItem("orca_lang");
@@ -472,22 +655,146 @@
     }
   } catch (e) {}
 
-  // Speech Recognition State
+  // Speech / Web Audio Recording State
   let activeRecognition = null;
   let isListening = false;
   let activeMicBtn = null;
-  let activeVoiceStatusEl = null;
+  let activeAudioContext = null;
+  let activeMediaStream = null;
+  let activeScriptNode = null;
+  let activeFinishRecordingFn = null;
 
   // Audio / TTS State
   let activeAudio = null;
   let activeSpeakBtn = null;
 
   function t(key, fallback) {
+    if (currentLang === "hinglish" && HINGLISH_DICT[key]) {
+      return HINGLISH_DICT[key];
+    }
     const idx = LANG_INDEX[currentLang] ?? 0;
     const row = DICT[key];
     if (row && row[idx]) return row[idx];
     if (row && row[0]) return row[0];
     return fallback !== undefined ? fallback : key;
+  }
+
+  function translatePortText(rawText, langOverride) {
+    if (!rawText) return "";
+    const lang = langOverride || currentLang || "en";
+    if (lang === "en") return String(rawText);
+    const idx = LANG_INDEX[lang];
+    if (idx === undefined || idx === 0) return String(rawText);
+
+    let out = String(rawText);
+    for (let i = 0; i < PORT_TERMS_DICT.length; i++) {
+      const entry = PORT_TERMS_DICT[i];
+      const enTerm = entry[0];
+      const targetTerm = entry[idx] || entry[1] || enTerm;
+      if (out.includes(enTerm)) {
+        out = out.split(enTerm).join(targetTerm);
+      }
+    }
+    return out;
+  }
+
+  function localizeAllPorts() {
+    // 1. Bottom #station-select (<optgroup> labels & <option> display text; preserve option.value!)
+    const stationSelect = document.getElementById("station-select");
+    if (stationSelect) {
+      stationSelect.querySelectorAll("optgroup").forEach(og => {
+        const origLabel = og.getAttribute("data-orig-label") || og.label;
+        if (!og.hasAttribute("data-orig-label")) {
+          og.setAttribute("data-orig-label", origLabel);
+        }
+        og.label = translatePortText(origLabel);
+      });
+
+      stationSelect.querySelectorAll("option").forEach(opt => {
+        const origText = opt.getAttribute("data-orig-text") || opt.textContent;
+        if (!opt.hasAttribute("data-orig-text")) {
+          opt.setAttribute("data-orig-text", origText);
+        }
+        opt.textContent = translatePortText(origText);
+      });
+    }
+
+    // 2. Top Header Station Name (#header-station-name)
+    const headerSt = document.getElementById("header-station-name");
+    if (headerSt) {
+      const origPort = headerSt.getAttribute("data-orig-port") || headerSt.textContent;
+      if (!headerSt.hasAttribute("data-orig-port")) {
+        headerSt.setAttribute("data-orig-port", origPort);
+      }
+      headerSt.textContent = translatePortText(origPort);
+    }
+
+    // 3. Top Sea Safety Meta (#sea-condition-meta) & Status (#sea-condition-status)
+    const seaMeta = document.getElementById("sea-condition-meta");
+    if (seaMeta) {
+      const origMeta = seaMeta.getAttribute("data-orig-meta") || seaMeta.textContent;
+      if (!seaMeta.hasAttribute("data-orig-meta")) {
+        seaMeta.setAttribute("data-orig-meta", origMeta);
+      }
+      seaMeta.textContent = translatePortText(origMeta);
+    }
+    const seaStatus = document.getElementById("sea-condition-status");
+    if (seaStatus && seaStatus.classList.contains("safe")) {
+      seaStatus.textContent = t("sea_safety.safe");
+    }
+
+    // 4. Left Panel Coastal Port Weather Name (#weather-port-name)
+    const weatherPortEl = document.getElementById("weather-port-name");
+    if (weatherPortEl) {
+      const origW = weatherPortEl.getAttribute("data-orig-port") || weatherPortEl.textContent;
+      if (!weatherPortEl.hasAttribute("data-orig-port")) {
+        weatherPortEl.setAttribute("data-orig-port", origW);
+      }
+      weatherPortEl.textContent = translatePortText(origW);
+    }
+
+    // 5. Active Route Card Departure (#route-card-departure) & Departure Modal (#dep-port-title)
+    const routeDep = document.getElementById("route-card-departure");
+    if (routeDep) {
+      const origDep = routeDep.getAttribute("data-orig-port") || routeDep.textContent;
+      if (!routeDep.hasAttribute("data-orig-port")) {
+        routeDep.setAttribute("data-orig-port", origDep);
+      }
+      routeDep.textContent = translatePortText(origDep);
+    }
+
+    const depPortTitle = document.getElementById("dep-port-title");
+    if (depPortTitle) {
+      const origTitle = depPortTitle.getAttribute("data-orig-port") || depPortTitle.textContent;
+      if (!depPortTitle.hasAttribute("data-orig-port")) {
+        depPortTitle.setAttribute("data-orig-port", origTitle);
+      }
+      depPortTitle.textContent = translatePortText(origTitle);
+    }
+
+    // 6. Right Panel Inspector Name (#inspector-name)
+    const inspName = document.getElementById("inspector-name");
+    if (inspName) {
+      const origInsp = inspName.getAttribute("data-orig-port") || inspName.textContent;
+      if (!inspName.hasAttribute("data-orig-port")) {
+        inspName.setAttribute("data-orig-port", origInsp);
+      }
+      inspName.textContent = translatePortText(origInsp);
+    }
+
+    // 7. 2D Leaflet Map Port Badges
+    document.querySelectorAll(".leaflet-port-name-text").forEach(sp => {
+      const origP = sp.getAttribute("data-orig-port") || sp.textContent;
+      if (!sp.hasAttribute("data-orig-port")) {
+        sp.setAttribute("data-orig-port", origP);
+      }
+      sp.textContent = translatePortText(origP);
+    });
+
+    // 8. 3D Cesium Globe Port Badges
+    if (window.ORCA_CESIUM && typeof window.ORCA_CESIUM.refreshPortLabels === "function") {
+      window.ORCA_CESIUM.refreshPortLabels(translatePortText);
+    }
   }
 
   function getLanguage() {
@@ -503,12 +810,12 @@
    * Apply translations across the entire ORCA interface without reloading or losing state
    */
   function applyUITranslations() {
-    document.documentElement.lang = currentLang;
+    document.documentElement.lang = currentLang === "hinglish" ? "hi-Latn" : currentLang;
 
     // 1. Update any element tagged with data-i18n
     document.querySelectorAll("[data-i18n]").forEach(el => {
       const key = el.getAttribute("data-i18n");
-      if (key && DICT[key]) {
+      if (key && (DICT[key] || HINGLISH_DICT[key])) {
         if (el.getAttribute("data-i18n-html") === "true") {
           el.innerHTML = t(key);
         } else {
@@ -519,7 +826,7 @@
 
     document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
       const key = el.getAttribute("data-i18n-placeholder");
-      if (key && DICT[key]) {
+      if (key && (DICT[key] || HINGLISH_DICT[key])) {
         el.setAttribute("placeholder", t(key));
       }
     });
@@ -527,7 +834,7 @@
     // 2. Declarative DOM mapping for existing ORCA elements so globe.html stays clean
     const setTxt = (sel, key) => {
       const el = document.querySelector(sel);
-      if (el && DICT[key]) el.textContent = t(key);
+      if (el && (DICT[key] || HINGLISH_DICT[key])) el.textContent = t(key);
     };
 
     // Header & Top Stats
@@ -535,8 +842,9 @@
     const subP = document.querySelector(".brand-titles p");
     if (subP) {
       const stSpan = document.getElementById("header-station-name");
-      const stName = stSpan ? stSpan.textContent : "Kochi (Kerala)";
-      subP.innerHTML = `${t("header.subtitle")} • <span id="header-station-name">${stName}</span>`;
+      const origPort = stSpan ? (stSpan.getAttribute("data-orig-port") || stSpan.textContent) : "Kochi (Kerala)";
+      const trPort = translatePortText(origPort);
+      subP.innerHTML = `${t("header.subtitle")} • <span id="header-station-name" data-orig-port="${origPort.replace(/"/g, "&quot;")}">${trPort}</span>`;
     }
 
     const statLabels = document.querySelectorAll(".top-stats .stat-item .stat-label");
@@ -751,6 +1059,9 @@
     document.querySelectorAll(".spot-take-me-btn span:first-child").forEach(sp => {
       sp.textContent = t("ws.take_me");
     });
+
+    // Localize all 43 port names across dropdowns, headers, weather cards, route cards, and 2D/3D maps
+    localizeAllPorts();
   }
 
   function setLanguage(langCode) {
@@ -775,7 +1086,7 @@
   }
 
   // =========================================================================
-  // MICROPHONE / SPEECH-TO-TEXT (VOICE INPUT)
+  // MICROPHONE / SPEECH-TO-TEXT (WEB AUDIO WAV RECORDER + BACKEND STT)
   // =========================================================================
   function setVoiceStatus(message, stateClass) {
     const statusEls = document.querySelectorAll(".orca-voice-status");
@@ -792,8 +1103,27 @@
     });
   }
 
+  function cleanupAudioRecording() {
+    if (activeScriptNode) {
+      try { activeScriptNode.disconnect(); } catch (e) {}
+      activeScriptNode = null;
+    }
+    if (activeMediaStream) {
+      try {
+        activeMediaStream.getTracks().forEach(tr => tr.stop());
+      } catch (e) {}
+      activeMediaStream = null;
+    }
+    if (activeAudioContext) {
+      try { activeAudioContext.close(); } catch (e) {}
+      activeAudioContext = null;
+    }
+    activeFinishRecordingFn = null;
+  }
+
   function stopVoiceInput() {
     isListening = false;
+    cleanupAudioRecording();
     if (activeRecognition) {
       try {
         activeRecognition.onend = null;
@@ -808,117 +1138,251 @@
     });
   }
 
-  function toggleVoiceInput(targetInputEl, micBtnEl) {
+  /**
+   * Downsample Float32 PCM buffer to 16kHz 16-bit mono WAV ArrayBuffer
+   */
+  function encodePCMToWav(chunks, inputSampleRate) {
+    let totalLength = 0;
+    for (let i = 0; i < chunks.length; i++) {
+      totalLength += chunks[i].length;
+    }
+    const merged = new Float32Array(totalLength);
+    let offset = 0;
+    for (let i = 0; i < chunks.length; i++) {
+      merged.set(chunks[i], offset);
+      offset += chunks[i].length;
+    }
+
+    const targetRate = 16000;
+    let samples = merged;
+    if (inputSampleRate !== targetRate && inputSampleRate > targetRate) {
+      const ratio = inputSampleRate / targetRate;
+      const newLen = Math.round(merged.length / ratio);
+      samples = new Float32Array(newLen);
+      for (let i = 0; i < newLen; i++) {
+        const start = Math.floor(i * ratio);
+        const end = Math.min(merged.length, Math.floor((i + 1) * ratio));
+        let sum = 0;
+        let count = 0;
+        for (let j = start; j < end; j++) {
+          sum += merged[j];
+          count++;
+        }
+        samples[i] = count > 0 ? sum / count : merged[start];
+      }
+    }
+
+    // Normalize peak amplitude if quiet microphone
+    let maxPeak = 0;
+    for (let i = 0; i < samples.length; i++) {
+      const a = Math.abs(samples[i]);
+      if (a > maxPeak) maxPeak = a;
+    }
+    const gain = (maxPeak > 0.005 && maxPeak < 0.5) ? Math.min(6.0, 0.85 / maxPeak) : 1.0;
+
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+
+    const writeString = (off, str) => {
+      for (let i = 0; i < str.length; i++) {
+        view.setUint8(off + i, str.charCodeAt(i));
+      }
+    };
+
+    const actualRate = (inputSampleRate > targetRate) ? targetRate : inputSampleRate;
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + samples.length * 2, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true); // PCM chunk size
+    view.setUint16(20, 1, true);  // PCM format = 1
+    view.setUint16(22, 1, true);  // Mono = 1 channel
+    view.setUint32(24, actualRate, true);
+    view.setUint32(28, actualRate * 2, true); // byte rate
+    view.setUint16(32, 2, true);  // block align
+    view.setUint16(34, 16, true); // 16-bit samples
+    writeString(36, "data");
+    view.setUint32(40, samples.length * 2, true);
+
+    let byteOffset = 44;
+    for (let i = 0; i < samples.length; i++, byteOffset += 2) {
+      const s = Math.max(-1, Math.min(1, samples[i] * gain));
+      view.setInt16(byteOffset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+
+    return buffer;
+  }
+
+  let lastAutoFinishTime = 0;
+
+  async function toggleVoiceInput(targetInputEl, micBtnEl) {
+    // If already listening, clicking Mic finishes recording & processes speech immediately!
     if (isListening) {
-      stopVoiceInput();
-      setVoiceStatus("", "");
+      if (typeof activeFinishRecordingFn === "function") {
+        activeFinishRecordingFn();
+      } else {
+        stopVoiceInput();
+        setVoiceStatus("", "");
+      }
       return;
     }
 
-    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRec) {
-      setVoiceStatus(t("voice.err_unsupported"), "status-error");
-      if (micBtnEl) {
-        micBtnEl.classList.add("error");
-        setTimeout(() => micBtnEl.classList.remove("error"), 3000);
-      }
+    // If currently processing or auto-finished less than 1200ms ago, ignore accidental stop click
+    if ((micBtnEl && micBtnEl.classList.contains("processing")) || (Date.now() - lastAutoFinishTime < 1200)) {
       return;
     }
 
     stopSpeechPlayback();
-
-    const recognition = new SpeechRec();
-    activeRecognition = recognition;
     activeMicBtn = micBtnEl;
-
     const langMeta = getLanguageMeta(currentLang);
-    recognition.lang = langMeta.bcp47 || "en-IN";
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
 
-    let finalTranscript = "";
-    let interimTranscript = "";
+    // Primary Method: Standard Web Audio API + Backend STT (/api/v1/agent/stt)
+    // Works reliably in Brave, Edge, Chrome, Firefox, and Playwright without Chrome socket "(network)" errors
+    if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === "function") {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
 
-    recognition.onstart = () => {
-      isListening = true;
-      if (micBtnEl) {
-        micBtnEl.classList.remove("error", "processing");
-        micBtnEl.classList.add("listening");
-        const lbl = micBtnEl.querySelector(".mic-btn-label");
-        if (lbl) lbl.textContent = t("voice.listening").replace("🎙 ", "");
-      }
-      setVoiceStatus(`${t("voice.listening")} (${langMeta.native})`, "status-listening");
-    };
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioCtx();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const processor = audioCtx.createScriptProcessor(4096, 1, 1);
 
-    recognition.onresult = (event) => {
-      interimTranscript = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const chunk = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += chunk;
-        } else {
-          interimTranscript += chunk;
+        activeMediaStream = stream;
+        activeAudioContext = audioCtx;
+        activeScriptNode = processor;
+        isListening = true;
+
+        if (micBtnEl) {
+          micBtnEl.classList.remove("error", "processing");
+          micBtnEl.classList.add("listening");
+          const lbl = micBtnEl.querySelector(".mic-btn-label");
+          if (lbl) lbl.textContent = t("voice.listening").replace("🎙 ", "");
+        }
+        setVoiceStatus(`${t("voice.listening")} (${langMeta.native})`, "status-listening");
+
+        const pcmChunks = [];
+        let heardSpeech = false;
+        let lastSpeechTime = Date.now();
+        const startTime = Date.now();
+        let finished = false;
+
+        const finishAndTranscribe = async (wasAuto) => {
+          if (finished) return;
+          finished = true;
+          isListening = false;
+          if (wasAuto) lastAutoFinishTime = Date.now();
+
+          const sampleRate = audioCtx.sampleRate || 44100;
+          cleanupAudioRecording();
+
+          if (micBtnEl) {
+            micBtnEl.classList.remove("listening");
+            micBtnEl.classList.add("processing");
+            const lbl = micBtnEl.querySelector(".mic-btn-label");
+            if (lbl) lbl.textContent = t("voice.mic_btn").replace("🎙 ", "");
+          }
+          setVoiceStatus(t("voice.processing"), "status-processing");
+
+          try {
+            const wavBuffer = encodePCMToWav(pcmChunks, sampleRate);
+            const host = window.location.hostname || "127.0.0.1";
+            const sttUrls = [
+              `http://${host}:8000/api/v1/agent/stt?lang=${encodeURIComponent(currentLang)}`,
+              `http://127.0.0.1:8000/api/v1/agent/stt?lang=${encodeURIComponent(currentLang)}`,
+              `http://localhost:8000/api/v1/agent/stt?lang=${encodeURIComponent(currentLang)}`
+            ];
+
+            let sttData = null;
+            for (const url of sttUrls) {
+              try {
+                const resp = await fetch(url, {
+                  method: "POST",
+                  headers: { "Content-Type": "audio/wav" },
+                  body: wavBuffer
+                });
+                if (resp.ok) {
+                  sttData = await resp.json();
+                  break;
+                }
+              } catch (e) {}
+            }
+
+            if (micBtnEl) micBtnEl.classList.remove("processing");
+
+            if (sttData && sttData.success && sttData.transcript) {
+              const spokenText = sttData.transcript.trim();
+              if (targetInputEl) targetInputEl.value = spokenText;
+              setVoiceStatus("", "");
+              if (window.ORCA_AGENT && typeof window.ORCA_AGENT.ask === "function") {
+                window.ORCA_AGENT.ask(spokenText);
+              }
+            } else {
+              setVoiceStatus(t("voice.err_unclear"), "status-error");
+              if (micBtnEl) {
+                micBtnEl.classList.add("error");
+                setTimeout(() => micBtnEl.classList.remove("error"), 3000);
+              }
+            }
+          } catch (err) {
+            if (micBtnEl) micBtnEl.classList.remove("processing");
+            setVoiceStatus(t("voice.err_unclear"), "status-error");
+          }
+        };
+
+        activeFinishRecordingFn = finishAndTranscribe;
+
+        processor.onaudioprocess = (e) => {
+          if (!isListening || finished) return;
+          const input = e.inputBuffer.getChannelData(0);
+          pcmChunks.push(new Float32Array(input));
+
+          // Compute RMS energy for automatic silence endpointing
+          let sumSq = 0;
+          for (let i = 0; i < input.length; i++) {
+            sumSq += input[i] * input[i];
+          }
+          const rms = Math.sqrt(sumSq / input.length);
+          const now = Date.now();
+
+          if (rms > 0.012) {
+            heardSpeech = true;
+            lastSpeechTime = now;
+          }
+
+          // Auto-stop 1.3s after user finishes speaking, or after 4.5s max
+          if ((heardSpeech && (now - lastSpeechTime > 1300) && (now - startTime > 1600)) || (now - startTime > 4500)) {
+            finishAndTranscribe(true);
+          }
+        };
+
+        source.connect(processor);
+        processor.connect(audioCtx.destination);
+        return;
+      } catch (permErr) {
+        cleanupAudioRecording();
+        isListening = false;
+        if (permErr && (permErr.name === "NotAllowedError" || permErr.name === "PermissionDeniedError")) {
+          setVoiceStatus(t("voice.err_denied"), "status-error");
+          if (micBtnEl) {
+            micBtnEl.classList.add("error");
+            setTimeout(() => micBtnEl.classList.remove("error"), 3000);
+          }
+          return;
         }
       }
-      const combined = (finalTranscript || interimTranscript).trim();
-      if (targetInputEl && combined) {
-        targetInputEl.value = combined;
-      }
-    };
+    }
 
-    recognition.onerror = (event) => {
-      isListening = false;
-      if (micBtnEl) {
-        micBtnEl.classList.remove("listening", "processing");
-        micBtnEl.classList.add("error");
-        setTimeout(() => micBtnEl.classList.remove("error"), 3000);
-        const lbl = micBtnEl.querySelector(".mic-btn-label");
-        if (lbl) lbl.textContent = t("voice.mic_btn").replace("🎙 ", "");
-      }
-
-      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        setVoiceStatus(t("voice.err_denied"), "status-error");
-      } else if (event.error === "no-speech" || event.error === "audio-capture") {
-        setVoiceStatus(t("voice.err_unclear"), "status-error");
-      } else {
-        setVoiceStatus(`${t("voice.err_unclear")} (${event.error})`, "status-error");
-      }
-    };
-
-    recognition.onend = () => {
-      const wasListening = isListening;
-      isListening = false;
-      activeRecognition = null;
-
-      const spokenText = (finalTranscript || interimTranscript || (targetInputEl ? targetInputEl.value : "")).trim();
-      if (micBtnEl) {
-        micBtnEl.classList.remove("listening");
-        const lbl = micBtnEl.querySelector(".mic-btn-label");
-        if (lbl) lbl.textContent = t("voice.mic_btn").replace("🎙 ", "");
-      }
-
-      if (wasListening && spokenText) {
-        if (micBtnEl) micBtnEl.classList.add("processing");
-        setVoiceStatus(t("voice.processing"), "status-processing");
-        if (targetInputEl) targetInputEl.value = spokenText;
-
-        setTimeout(() => {
-          if (micBtnEl) micBtnEl.classList.remove("processing");
-          setVoiceStatus("", "");
-          if (window.ORCA_AGENT && typeof window.ORCA_AGENT.ask === "function") {
-            window.ORCA_AGENT.ask(spokenText);
-          }
-        }, 180);
-      } else if (wasListening && !spokenText) {
-        setVoiceStatus(t("voice.err_unclear"), "status-error");
-      }
-    };
-
-    try {
-      recognition.start();
-    } catch (err) {
-      setVoiceStatus(t("voice.err_unclear"), "status-error");
+    // Fallback if getUserMedia is unavailable
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+      setVoiceStatus(t("voice.err_unsupported"), "status-error");
+      return;
     }
   }
 
@@ -928,6 +1392,7 @@
   function cleanTextForSpeech(rawText) {
     if (!rawText) return "";
     return String(rawText)
+      .split(/💬\s*\*?\*?Hinglish Summary:/i)[0]
       .replace(/<[^>]*>/g, " ")
       .replace(/\*\*\[.*?\]\*\*/g, "")
       .replace(/[*_#`~>]/g, "")
@@ -973,7 +1438,7 @@
       utter.lang = bcp;
 
       const voices = window.speechSynthesis.getVoices() || [];
-      const prefix = langCode.toLowerCase();
+      const prefix = (langCode === "hinglish" ? "hi" : langCode).toLowerCase();
       const matchedVoice =
         voices.find(v => v.lang && v.lang.toLowerCase() === bcp.toLowerCase()) ||
         voices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
@@ -995,7 +1460,6 @@
   }
 
   function speakText(rawText, btnEl, langOverride) {
-    // If clicking the same button that is already speaking, stop immediately
     if (btnEl && btnEl.classList.contains("speaking")) {
       stopSpeechPlayback();
       return;
@@ -1014,10 +1478,9 @@
     }
 
     const host = window.location.hostname || "127.0.0.1";
-    const ttsUrl = `http://${host}:8000/api/v1/agent/tts?lang=${encodeURIComponent(lang)}&text=${encodeURIComponent(clean.slice(0, 900))}`;
+    const ttsLang = lang === "hinglish" ? "hi" : lang;
+    const ttsUrl = `http://${host}:8000/api/v1/agent/tts?lang=${encodeURIComponent(ttsLang)}&text=${encodeURIComponent(clean.slice(0, 900))}`;
 
-    // Use backend API TTS stream first so all 11 Indian languages speak with authentic pronunciation,
-    // and fall back automatically to browser speechSynthesis if backend is unreachable.
     const audio = new Audio(ttsUrl);
     activeAudio = audio;
 
@@ -1046,6 +1509,14 @@
         setLanguage(e.target.value);
       });
     });
+
+    // Re-apply port translations whenever station-select changes
+    const stationSelect = document.getElementById("station-select");
+    if (stationSelect) {
+      stationSelect.addEventListener("change", () => {
+        setTimeout(localizeAllPorts, 50);
+      });
+    }
 
     // Wire Mic buttons inside Ask ORCA Workspace and Drawer
     const wsMicBtn = document.getElementById("workspace-mic-btn");
@@ -1095,6 +1566,8 @@
     getLanguage,
     setLanguage,
     t,
+    translatePortText,
+    localizeAllPorts,
     applyUITranslations,
     toggleVoiceInput,
     stopVoiceInput,

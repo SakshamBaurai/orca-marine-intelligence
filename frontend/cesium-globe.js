@@ -598,12 +598,16 @@ viewer = new Cesium.Viewer(container, {
     // -----------------------------------------------------------------------
     // COASTAL PORTS - CRISP HIGH-DPI BADGES
     // -----------------------------------------------------------------------
+    window._orcaCesiumPortEntities = [];
 
     coastalPorts.forEach((port) => {
-      const badge = buildPortBadge(port.name, port.isMajor);
+      const displayLabel = (window.ORCA_I18N && typeof window.ORCA_I18N.translatePortText === "function")
+        ? window.ORCA_I18N.translatePortText(port.name)
+        : port.name;
+      const badge = buildPortBadge(displayLabel, port.isMajor);
 
-      viewer.entities.add({
-        name: port.name,
+      const portEntity = viewer.entities.add({
+        name: displayLabel,
 
         position: Cesium.Cartesian3.fromDegrees(
           port.lon,
@@ -637,6 +641,12 @@ viewer = new Cesium.Viewer(container, {
             isMajor: !!port.isMajor
           }
         }
+      });
+
+      window._orcaCesiumPortEntities.push({
+        entity: portEntity,
+        origName: port.name,
+        isMajor: !!port.isMajor
       });
     });
   }
@@ -1549,13 +1559,24 @@ viewer = new Cesium.Viewer(container, {
         if (card) card.style.display = "none";
       },
 
-    // ---------------------------------------------------------------
-    // Get viewer
-    // ---------------------------------------------------------------
-
     getViewer:
       function () {
         return viewer;
+      },
+
+    refreshPortLabels:
+      function (translateFn) {
+        if (!viewer || !Array.isArray(window._orcaCesiumPortEntities)) return;
+        window._orcaCesiumPortEntities.forEach(item => {
+          const translatedName = typeof translateFn === "function" ? translateFn(item.origName) : item.origName;
+          const badge = buildPortBadge(translatedName, item.isMajor);
+          item.entity.name = translatedName;
+          if (item.entity.billboard) {
+            item.entity.billboard.image = badge.canvas;
+            item.entity.billboard.width = badge.width;
+            item.entity.billboard.height = badge.height;
+          }
+        });
       }
   };
 

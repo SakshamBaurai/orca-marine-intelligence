@@ -123,7 +123,8 @@
   <span class="orca-lang-icon">🌐</span>
   <select id="orca-lang-select" class="orca-lang-select" aria-label="Select Language">
     <option value="en">Language: English</option>
-    <option value="hi">हिन्दी (Hindi)</option>
+    <option value="hi">हिन्दी / Hinglish (Hindi)</option>
+    <option value="hinglish">Hinglish (Roman Hindi)</option>
     <option value="mr">मराठी (Marathi)</option>
     <option value="gu">ગુજરાતી (Gujarati)</option>
     <option value="ml">മലയാളം (Malayalam)</option>
@@ -974,7 +975,13 @@
 
       window.updateCoastalPortWeather = async function (portInfo) {
         if (!portInfo) return;
-        if (elName) elName.textContent = `Loading ${portInfo.name}...`;
+        const trPort = (txt) => (window.ORCA_I18N && typeof window.ORCA_I18N.translatePortText === "function")
+          ? window.ORCA_I18N.translatePortText(txt)
+          : txt;
+        if (elName) {
+          elName.setAttribute("data-orig-port", `${portInfo.name} Live Weather`);
+          elName.textContent = trPort(`${portInfo.name} Live Weather`);
+        }
         if (elTemp) elTemp.textContent = "--";
         if (elWind) elWind.textContent = "--";
         if (elHum) elHum.textContent = "--";
@@ -985,16 +992,25 @@
           const res = await fetch(url);
           const data = await res.json();
           if (data && data.current) {
-            if (elName) elName.textContent = `${portInfo.name} Live Weather`;
+            if (elName) {
+              elName.setAttribute("data-orig-port", `${portInfo.name} Live Weather`);
+              elName.textContent = trPort(`${portInfo.name} Live Weather`);
+            }
             if (elTemp) elTemp.textContent = `${data.current.temperature_2m} °C`;
             if (elWind) elWind.textContent = `${data.current.wind_speed_10m} km/h`;
             if (elHum) elHum.textContent = `${data.current.relative_humidity_2m} %`;
           } else {
-            if (elName) elName.textContent = `${portInfo.name} Weather`;
+            if (elName) {
+              elName.setAttribute("data-orig-port", `${portInfo.name} Weather`);
+              elName.textContent = trPort(`${portInfo.name} Weather`);
+            }
           }
         } catch (err) {
           console.error("Coastal weather fetch error:", err);
-          if (elName) elName.textContent = `${portInfo.name} Weather`;
+          if (elName) {
+            elName.setAttribute("data-orig-port", `${portInfo.name} Weather`);
+            elName.textContent = trPort(`${portInfo.name} Weather`);
+          }
         }
       };
 

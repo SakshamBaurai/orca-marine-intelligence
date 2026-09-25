@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ==========================================================================
  * ORCA - DEEP OCEAN 3D GLOBE & HEALTH MONITORING SYSTEM
  * ==========================================================================
@@ -97,7 +97,14 @@
     const popMhiEl = document.getElementById("pop-mhi-val");
     const popAdvisoryEl = document.getElementById("popover-advisory");
 
-    if (metaEl) metaEl.textContent = `${name} • Checking...`;
+    const trPort = (txt) => (window.ORCA_I18N && typeof window.ORCA_I18N.translatePortText === "function")
+      ? window.ORCA_I18N.translatePortText(txt)
+      : txt;
+
+    if (metaEl) {
+      metaEl.setAttribute("data-orig-meta", `${name} • Checking...`);
+      metaEl.textContent = trPort(`${name} • Checking...`);
+    }
 
     try {
       const param = isPort ? `port=${encodeURIComponent(name)}` : `lat=${lat.toFixed(3)}&lon=${lon.toFixed(3)}`;
@@ -110,14 +117,18 @@
 
         const condStatus = data.condition_status || "SAFE / CALM WATERS";
         if (statusEl) {
-          statusEl.textContent = condStatus;
           const s = condStatus.toUpperCase();
           statusEl.className = "sea-ind-status " + (s.includes("SAFE") ? "safe" : (s.includes("MODERATE") ? "moderate" : (s.includes("CAUTION") ? "caution" : "rough")));
+          statusEl.textContent = (s.includes("SAFE") && window.ORCA_I18N && typeof window.ORCA_I18N.t === "function")
+            ? window.ORCA_I18N.t("sea_safety.safe")
+            : condStatus;
         }
         const score = data.condition_score ? `${data.condition_score}/100` : "84/100";
         const wind = data.weather?.wind_speed ? `${data.weather.wind_speed} km/h` : "12 km/h";
         if (metaEl) {
-          metaEl.textContent = `${name} • ${score} • ${wind}`.trim();
+          const rawMeta = `${name} • ${score} • ${wind}`.trim();
+          metaEl.setAttribute("data-orig-meta", rawMeta);
+          metaEl.textContent = trPort(rawMeta);
         }
         if (tagEl) {
           tagEl.textContent = "LIVE";
@@ -134,14 +145,14 @@
         // Update Popover
         if (popLeadEl) {
           const safeColor = condStatus.includes("SAFE") ? "#34d399" : (condStatus.includes("MODERATE") ? "#38bdf8" : "#fbbf24");
-          popLeadEl.innerHTML = `Operational assessment for <strong>${name}</strong>: <span style="color: ${safeColor}; font-weight: 700;">${condStatus}</span>`;
+          popLeadEl.innerHTML = `Operational assessment for <strong>${trPort(name)}</strong>: <span style="color: ${safeColor}; font-weight: 700;">${condStatus}</span>`;
         }
         if (popWindEl) popWindEl.textContent = wind;
         if (popSeaStateEl) popSeaStateEl.textContent = data.sea_state || "Calm Water (0.5m)";
         if (popSlaEl) popSlaEl.textContent = slaVal;
         if (popMhiEl) popMhiEl.textContent = `${score}`;
         if (popAdvisoryEl) {
-          popAdvisoryEl.innerHTML = `<strong>Operational Advisory:</strong> Safe conditions for small boat artisanal fishers and motorized craft departing from ${name}. Normal tidal sea level and calm sea conditions.`;
+          popAdvisoryEl.innerHTML = `<strong>Operational Advisory:</strong> Safe conditions for small boat artisanal fishers and motorized craft departing from ${trPort(name)}. Normal tidal sea level and calm sea conditions.`;
         }
         return;
       }
@@ -157,10 +168,16 @@
     const condStatus = health >= 78 ? "SAFE / CALM WATERS" : (health >= 65 ? "SAFE TO MODERATE" : "CAUTION / CHOPPY");
 
     if (statusEl) {
-      statusEl.textContent = condStatus;
       statusEl.className = "sea-ind-status " + (health >= 78 ? "safe" : (health >= 65 ? "moderate" : "caution"));
+      statusEl.textContent = (health >= 78 && window.ORCA_I18N && typeof window.ORCA_I18N.t === "function")
+        ? window.ORCA_I18N.t("sea_safety.safe")
+        : condStatus;
     }
-    if (metaEl) metaEl.textContent = `${name} • ${health}/100 • ${windSpeed} km/h`;
+    if (metaEl) {
+      const rawMeta = `${name} • ${health}/100 • ${windSpeed} km/h`;
+      metaEl.setAttribute("data-orig-meta", rawMeta);
+      metaEl.textContent = trPort(rawMeta);
+    }
     if (tagEl) {
       tagEl.textContent = "LIVE";
       tagEl.className = "sea-ind-tag";
@@ -2363,9 +2380,12 @@
       const badgeClass = isMajor ? "leaflet-port-badge-major" : "leaflet-port-badge-minor";
       const anchorClass = isMajor ? "leaflet-port-anchor" : "leaflet-port-anchor-minor";
 
+      const trName = (window.ORCA_I18N && typeof window.ORCA_I18N.translatePortText === "function")
+        ? window.ORCA_I18N.translatePortText(port.name)
+        : port.name;
       const portIcon = L.divIcon({
         className: "orca-leaflet-pill-container",
-        html: `<div class="${badgeClass}"><span class="${anchorClass}">âš“</span><span>${port.name}</span></div>`,
+        html: `<div class="${badgeClass}"><span class="${anchorClass}">⚓</span><span class="leaflet-port-name-text" data-orig-port="${port.name}">${trName}</span></div>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0]
       });
