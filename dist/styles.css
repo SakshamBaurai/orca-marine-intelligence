@@ -23,8 +23,9 @@
   --text-muted: #8ba3c7;
   --text-faint: #475f85;
 
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace;
+  --font-heading: "Futura", "Futura PT", "Futura Std", "Jost", "Century Gothic", sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace;
 
   --shadow-hud: 0 8px 32px 0 rgba(0, 3, 15, 0.6);
   --shadow-glow: 0 0 20px rgba(0, 245, 212, 0.25);
@@ -852,13 +853,16 @@ input:checked + .toggle-slider:before {
 }
 
 .brand-logo {
-  width: 28px;
-  height: 28px;
-  color: var(--accent-cyan);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
 }
 
 .brand-name {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family: var(--font-heading) !important;
   font-weight: 800 !important;
   font-size: 15px !important;
   letter-spacing: 0.05em !important;
@@ -869,7 +873,7 @@ input:checked + .toggle-slider:before {
 
 .brand-titles h1,
 .brand-titles .brand-h1 {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family: var(--font-heading) !important;
   font-size: 15px !important;
   font-weight: 800 !important;
   color: #ffffff !important;
@@ -1640,8 +1644,8 @@ input:checked + .toggle-slider:before {
 
 .orca-ai-launcher-btn {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 20px;
+  right: 356px;
   background: #111621;
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #f0f6fc;
@@ -3289,7 +3293,295 @@ input:checked + .toggle-slider:before {
   gap: 8px;
 }
 
+/* =========================================================================
+   CHATGPT / JABRA-STYLE LIVE SIMULTANEOUS VOICE TRANSCRIPT DOCK (DOWN BELOW)
+   ========================================================================= */
 
+.orca-live-transcript-dock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(10, 22, 40, 0.96) 0%, rgba(15, 32, 56, 0.96) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.42);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(56, 189, 248, 0.12);
+  transition: all 0.2s ease;
+  animation: fadeInModal 0.18s ease-out;
+}
 
+.orca-live-transcript-dock.dock-listening {
+  border-color: rgba(239, 68, 68, 0.65);
+  background: linear-gradient(135deg, rgba(38, 12, 22, 0.92) 0%, rgba(15, 26, 46, 0.96) 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(239, 68, 68, 0.22);
+}
 
+.orca-live-transcript-dock.dock-processing {
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(245, 158, 11, 0.2);
+}
+
+.orca-live-transcript-dock.dock-completed {
+  border-color: rgba(0, 245, 212, 0.5);
+  background: linear-gradient(135deg, rgba(8, 28, 38, 0.95) 0%, rgba(12, 25, 44, 0.96) 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(0, 245, 212, 0.15);
+}
+
+.orca-drawer-transcript-dock {
+  margin: 6px 12px 10px 12px;
+  padding: 8px 10px;
+  gap: 8px;
+}
+
+.orca-transcript-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.orca-transcript-rec-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  flex-shrink: 0;
+}
+
+.orca-live-transcript-dock.dock-listening .orca-transcript-rec-dot {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+  animation: orcaRecDotBlink 1s infinite ease-in-out;
+}
+
+.orca-live-transcript-dock.dock-completed .orca-transcript-rec-dot {
+  background: #00f5d4;
+  box-shadow: 0 0 8px #00f5d4;
+}
+
+@keyframes orcaRecDotBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.82); }
+}
+
+.orca-voice-bars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.5px;
+  height: 24px;
+  padding: 0 4px;
+}
+
+.orca-voice-bars span {
+  display: inline-block;
+  width: 3px;
+  height: 5px;
+  min-height: 4px;
+  max-height: 22px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #00f5d4 0%, #38bdf8 100%);
+  transition: height 0.07s ease-out;
+}
+
+.orca-live-transcript-dock.dock-listening .orca-voice-bars span {
+  background: linear-gradient(180deg, #fca5a5 0%, #ef4444 60%, #38bdf8 100%);
+}
+
+.orca-transcript-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.orca-transcript-header-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.orca-transcript-stage-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #38bdf8;
+}
+
+.orca-live-transcript-dock.dock-listening .orca-transcript-stage-label {
+  color: #fca5a5;
+}
+
+.orca-live-transcript-dock.dock-completed .orca-transcript-stage-label {
+  color: #00f5d4;
+}
+
+.orca-transcript-lang-pill {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  color: #e2e8f0;
+}
+
+.orca-live-transcript-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f8fafc;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.orca-drawer-transcript-dock .orca-live-transcript-text {
+  font-size: 11.5px;
+}
+
+.orca-live-transcript-text.placeholder-hint {
+  color: #94a3b8;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.orca-transcript-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.orca-transcript-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.orca-transcript-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.orca-transcript-done-btn {
+  background: rgba(0, 245, 212, 0.16);
+  border-color: rgba(0, 245, 212, 0.45);
+  color: #00f5d4;
+}
+
+.orca-transcript-done-btn:hover {
+  background: rgba(0, 245, 212, 0.28);
+  border-color: #00f5d4;
+  color: #ffffff;
+}
+
+/* =========================================================================
+   FUTURA TYPOGRAPHY SYSTEM FOR HEADINGS, TITLES & SECTION HEADERS
+   (Explanations & text blocks remain in the usual --font-sans / --font-mono)
+   ========================================================================= */
+
+h1, h2, h3, h4, h5, h6,
+.brand-name,
+.brand-titles h1,
+.brand-titles .brand-h1,
+.live-badge,
+.hud-btn,
+#btn-ask-orca,
+.orca-btn-text,
+.sea-ind-title,
+.sea-ind-status,
+.sea-ind-tag,
+.telemetry-label,
+.panel-section-title,
+#weather-port-name,
+.station-title,
+.station-status-pill,
+.mhi-title,
+.mhi-status-pill,
+.route-result-title,
+.route-result-badge,
+.btn-clear-route,
+.dock-label,
+.legend-title,
+.symbology-badge,
+.symbology-title,
+.sym-section-label,
+#floating-tooltip .tooltip-header,
+.popover-title,
+.pop-lbl,
+.data-key-section h4,
+.tier-pill,
+.orca-modal-title,
+.departure-spot-badge,
+.tier-badge,
+.insp-rationale-title,
+.departure-label,
+.departure-port-name-val,
+.dep-source-tag,
+.dep-metric-label,
+.orca-modal-btn,
+.workspace-pill-badge,
+.workspace-title,
+.workspace-close-btn,
+.prompts-label,
+.sender-name,
+.verified-tag,
+.spot-card-badge,
+.spot-card-dist,
+.spot-take-me-btn,
+.ai-card-label,
+.ai-card-badge,
+.ai-title,
+.live-model-badge,
+.ai-sender,
+.orca-ai-launcher-btn,
+.orca-transcript-stage-label,
+.orca-transcript-lang-pill,
+.leaflet-port-badge-major,
+.leaflet-port-badge-minor {
+  font-family: var(--font-heading) !important;
+}
+
+/* Ensure explanation paragraphs, descriptions, and text blocks retain usual fonts */
+.brand-titles p,
+.workspace-msg-content,
+.ai-content,
+.sym-desc,
+.data-key-section p,
+.data-key-param-list,
+.key-tier-item,
+.popover-lead,
+.popover-note,
+.popover-advisory,
+.orca-modal-text,
+.insp-explainer-banner,
+.insp-rationale-list,
+.departure-note,
+.orca-live-transcript-text,
+#workspace-query-input,
+#ai-chat-input,
+.prompt-chip,
+.ai-chip,
+.metric-info,
+.filter-list label,
+.gauge-name,
+.route-info-label,
+.route-info-val,
+.key-item {
+  font-family: var(--font-sans);
+}
 

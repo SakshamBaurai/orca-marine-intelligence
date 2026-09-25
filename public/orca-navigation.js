@@ -102,14 +102,22 @@
   // Departure Modal Management
   // --------------------------------------------------------------------------
 
-  function openDepartureModalForSpot(spot) {
+  function getCardinalDirection(deg) {
+    const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+    const idx = Math.round(deg / 22.5) % 16;
+    return dirs[idx];
+  }
+
+  function openDepartureModalForSpot(spot, preferredPort) {
     if (!spot) return;
     currentTargetSpot = spot;
 
     const modal = document.getElementById("orca-departure-modal");
     if (!modal) return;
 
-    const originPort = getSelectedDeparturePort();
+    const originPort = (preferredPort && Number.isFinite(Number(preferredPort.lat)) && Number.isFinite(Number(preferredPort.lon)))
+      ? preferredPort
+      : getSelectedDeparturePort();
 
     // Spot coordinates
     const spotLat = Number(spot.lat ?? spot.latitude ?? 19.5);
@@ -130,9 +138,9 @@
     if (depSpotName) depSpotName.textContent = spotName;
     if (depSpotCoords) depSpotCoords.textContent = `${spotLat.toFixed(2)}°N, ${spotLon.toFixed(2)}°E`;
 
-    const healthVal = spot.healthScore != null ? Math.round(spot.healthScore) : (spot.mhi != null ? Math.round(spot.mhi) : 85);
+    const healthVal = spot.healthScore != null ? Math.round(spot.healthScore) : (spot.marine_health != null ? Math.round(spot.marine_health) : (spot.mhi != null ? Math.round(spot.mhi) : 85));
     if (depSpotHealth) depSpotHealth.textContent = `Ocean Health: ${healthVal}/100`;
-    if (depSpotSst) depSpotSst.textContent = `Water Temp: ${spot.sst != null ? spot.sst.toFixed(1) : '27.5'}°C`;
+    if (depSpotSst) depSpotSst.textContent = `Water Temp: ${spot.sst != null ? Number(spot.sst).toFixed(1) : '27.5'}°C`;
     const chlVal = spot.chlorophyll != null ? spot.chlorophyll : (spot.chl != null ? spot.chl : 2.10);
     if (depSpotChl) depSpotChl.textContent = `Fish Food: ${Number(chlVal).toFixed(2)} mg/m³`;
     const salVal = spot.salinity != null ? spot.salinity : (spot.sal != null ? spot.sal : 35.4);
@@ -163,6 +171,7 @@
     const depChannelKm = document.getElementById("dep-channel-km");
     const depTransitTime = document.getElementById("dep-transit-time");
     const depBearing = document.getElementById("dep-bearing");
+    const depCardinalDir = document.getElementById("dep-cardinal-dir");
 
     if (distKm != null) {
       const dNm = (distKm * 0.539957).toFixed(1);
@@ -179,6 +188,19 @@
 
     if (depTransitTime) depTransitTime.textContent = travelStr;
     if (depBearing) depBearing.textContent = headingStr;
+    if (depCardinalDir) {
+      const degNum = parseFloat(headingStr);
+      depCardinalDir.textContent = Number.isFinite(degNum) ? `${getCardinalDirection(degNum)} heading` : "--";
+    }
+
+    // Minimize bottom-right AI drawer if open so it does not cover the Departure Inspector
+    const aiWidget = document.getElementById("orca-ai-widget");
+    const aiLauncher = document.getElementById("orca-ai-launcher");
+    if (aiWidget && !aiWidget.classList.contains("minimized")) {
+      aiWidget.classList.add("minimized");
+      aiWidget.style.display = "none";
+      if (aiLauncher) aiLauncher.style.display = "flex";
+    }
 
     modal.style.display = "flex";
   }
@@ -192,14 +214,32 @@
   // Execute Navigation & Show Route Result Directly in Route Panel
   // --------------------------------------------------------------------------
 
-  function executeTakeMeThere(spot) {
+  function executeTakeMeThere(spot, preferredPort) {
     const target = spot || currentTargetSpot;
     if (!target) return;
+    currentTargetSpot = target;
     hideDepartureModal();
 
-    const originPort = getSelectedDeparturePort();
+    // Ensure fullscreen Ask ORCA workspace and bottom-right AI drawer close so the user sees the globe/map & route card
+    const workspaceEl = document.getElementById("orca-ai-workspace");
+    if (workspaceEl && workspaceEl.classList.contains("expanded")) {
+      workspaceEl.classList.remove("expanded");
+    }
+    const aiWidget = document.getElementById("orca-ai-widget");
+    const aiLauncher = document.getElementById("orca-ai-launcher");
+    if (aiWidget && !aiWidget.classList.contains("minimized")) {
+      aiWidget.classList.add("minimized");
+      aiWidget.style.display = "none";
+      if (aiLauncher) aiLauncher.style.display = "flex";
+    }
+
+    const originPort = (preferredPort && Number.isFinite(Number(preferredPort.lat)) && Number.isFinite(Number(preferredPort.lon)))
+      ? preferredPort
+      : getSelectedDeparturePort();
     const spotLat = Number(target.lat ?? target.latitude);
     const spotLon = Number(target.lon ?? target.longitude);
+    target.lat = spotLat;
+    target.lon = spotLon;
     const spotName = target.label || target.name || `Fishing Zone #${target.id || '12'}`;
 
     if (window.ORCA_STATE) {
@@ -243,11 +283,16 @@
     // Fly camera smoothly to destination
     if (window.ORCA_GLOBE_CONTROLLER && typeof window.ORCA_GLOBE_CONTROLLER.flyToLocation === "function") {
       window.ORCA_GLOBE_CONTROLLER.flyToLocation(spotLat, spotLon, 280000, 2.0);
+    } else if (window.ORCA_CESIUM && typeof window.ORCA_CESIUM.flyToLocation === "function") {
+      window.ORCA_CESIUM.flyToLocation(spotLon, spotLat, 280000);
     }
 
-    // If 2D Leaflet map is active, draw Leaflet route
+    // If 2D Leaflet map is active, draw Leaflet route and pan
     if (typeof window.drawLeafletRoute === "function") {
       window.drawLeafletRoute(target);
+    }
+    if (window.leafletMap && typeof window.leafletMap.flyTo === "function") {
+      window.leafletMap.flyTo([spotLat, spotLon], 8, { duration: 1.5 });
     }
   }
 

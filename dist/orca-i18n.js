@@ -1086,8 +1086,15 @@
   }
 
   // =========================================================================
-  // MICROPHONE / SPEECH-TO-TEXT (WEB AUDIO WAV RECORDER + BACKEND STT)
+  // MICROPHONE / SPEECH-TO-TEXT (JABRA / CHATGPT LIVE SIMULTANEOUS DICTATION)
   // =========================================================================
+  let activeAnalyserNode = null;
+  let activeWaveformRaf = null;
+  let activePartialInterval = null;
+  let lastSpokenTranscript = "";
+  let lastTargetInputEl = null;
+  let lastMicBtnEl = null;
+
   function setVoiceStatus(message, stateClass) {
     const statusEls = document.querySelectorAll(".orca-voice-status");
     statusEls.forEach(el => {
@@ -1103,10 +1110,106 @@
     });
   }
 
+  function updateLiveTranscriptDock(state, transcriptText, isPlaceholder) {
+    const langMeta = getLanguageMeta(currentLang);
+    const docks = document.querySelectorAll(".orca-live-transcript-dock");
+    docks.forEach(dock => {
+      if (state === "hidden") {
+        dock.style.display = "none";
+        dock.classList.remove("dock-listening", "dock-processing", "dock-completed");
+        return;
+      }
+
+      dock.style.display = "flex";
+      dock.classList.remove("dock-listening", "dock-processing", "dock-completed");
+      if (state === "listening") dock.classList.add("dock-listening");
+      else if (state === "processing") dock.classList.add("dock-processing");
+      else if (state === "completed") dock.classList.add("dock-completed");
+
+      const stageLbl = dock.querySelector(".orca-transcript-stage-label");
+      const langPill = dock.querySelector(".orca-transcript-lang-pill");
+      const textEl = dock.querySelector(".orca-live-transcript-text");
+      const doneBtn = dock.querySelector(".orca-transcript-done-btn");
+      const editBtn = dock.querySelector(".orca-transcript-edit-btn");
+      const retryBtn = dock.querySelector(".orca-transcript-retry-btn");
+
+      if (langPill) langPill.textContent = langMeta.native;
+
+      if (stageLbl) {
+        if (state === "listening") {
+          stageLbl.textContent = "🔴 LIVE VOICE TRANSCRIPT (SPEAKING NOW)";
+        } else if (state === "processing") {
+          stageLbl.textContent = "⏳ FINALIZING VOICE TRANSCRIPT...";
+        } else if (state === "completed") {
+          stageLbl.textContent = "🎙 WHAT YOU SAID JUST NOW";
+        } else {
+          stageLbl.textContent = "⚠️ VOICE INPUT NOTICE";
+        }
+      }
+
+      if (textEl) {
+        if (isPlaceholder) {
+          textEl.classList.add("placeholder-hint");
+          textEl.textContent = transcriptText || `${t("voice.listening")} (${langMeta.native})...`;
+        } else {
+          textEl.classList.remove("placeholder-hint");
+          textEl.textContent = transcriptText ? `“${transcriptText}”` : "";
+        }
+      }
+
+      if (doneBtn) doneBtn.style.display = (state === "listening") ? "inline-flex" : "none";
+      if (editBtn) editBtn.style.display = (state === "completed" && transcriptText) ? "inline-flex" : "none";
+      if (retryBtn) retryBtn.style.display = (state === "completed" || state === "error") ? "inline-flex" : "none";
+    });
+  }
+
+  function resetVoiceBars() {
+    if (activeWaveformRaf) {
+      cancelAnimationFrame(activeWaveformRaf);
+      activeWaveformRaf = null;
+    }
+    document.querySelectorAll(".orca-voice-bars span").forEach(bar => {
+      bar.style.height = "5px";
+    });
+  }
+
+  function startWaveformAnimation(analyser) {
+    resetVoiceBars();
+    if (!analyser) return;
+    const freqData = new Uint8Array(analyser.frequencyBinCount);
+    const animate = () => {
+      if (!isListening || !activeAnalyserNode) {
+        resetVoiceBars();
+        return;
+      }
+      analyser.getByteFrequencyData(freqData);
+      document.querySelectorAll(".orca-voice-bars").forEach(container => {
+        const bars = container.querySelectorAll("span");
+        bars.forEach((bar, idx) => {
+          const binIdx = Math.min(freqData.length - 1, idx + 1);
+          const val = freqData[binIdx] || 0;
+          const h = Math.max(4, Math.min(22, Math.round(4 + (val / 255) * 18)));
+          bar.style.height = `${h}px`;
+        });
+      });
+      activeWaveformRaf = requestAnimationFrame(animate);
+    };
+    activeWaveformRaf = requestAnimationFrame(animate);
+  }
+
   function cleanupAudioRecording() {
+    if (activePartialInterval) {
+      clearInterval(activePartialInterval);
+      activePartialInterval = null;
+    }
+    resetVoiceBars();
     if (activeScriptNode) {
       try { activeScriptNode.disconnect(); } catch (e) {}
       activeScriptNode = null;
+    }
+    if (activeAnalyserNode) {
+      try { activeAnalyserNode.disconnect(); } catch (e) {}
+      activeAnalyserNode = null;
     }
     if (activeMediaStream) {
       try {
@@ -1140,11 +1243,15 @@
 
   /**
    * Downsample Float32 PCM buffer to 16kHz 16-bit mono WAV ArrayBuffer
+   * with DC-offset removal, leading/trailing silence trimming, and dynamic gain normalization.
    */
   function encodePCMToWav(chunks, inputSampleRate) {
     let totalLength = 0;
     for (let i = 0; i < chunks.length; i++) {
       totalLength += chunks[i].length;
+    }
+    if (totalLength === 0) {
+      return new ArrayBuffer(44);
     }
     const merged = new Float32Array(totalLength);
     let offset = 0;
@@ -1153,6 +1260,17 @@
       offset += chunks[i].length;
     }
 
+    // 1. Remove DC offset so mic bias never distorts speech recognition
+    let dcSum = 0;
+    for (let i = 0; i < merged.length; i++) {
+      dcSum += merged[i];
+    }
+    const dcMean = dcSum / merged.length;
+    for (let i = 0; i < merged.length; i++) {
+      merged[i] -= dcMean;
+    }
+
+    // 2. Downsample to 16 kHz mono
     const targetRate = 16000;
     let samples = merged;
     if (inputSampleRate !== targetRate && inputSampleRate > targetRate) {
@@ -1172,13 +1290,34 @@
       }
     }
 
-    // Normalize peak amplitude if quiet microphone
+    const actualRate = (inputSampleRate > targetRate) ? targetRate : inputSampleRate;
+
+    // 3. Trim leading and trailing dead silence (keep 180ms speech cushion)
+    const silenceThresh = 0.008;
+    const padSamples = Math.round(actualRate * 0.18);
+    let firstActive = 0;
+    let lastActive = samples.length - 1;
+    while (firstActive < samples.length && Math.abs(samples[firstActive]) < silenceThresh) {
+      firstActive++;
+    }
+    while (lastActive > firstActive && Math.abs(samples[lastActive]) < silenceThresh) {
+      lastActive--;
+    }
+    if (lastActive > firstActive) {
+      const trimStart = Math.max(0, firstActive - padSamples);
+      const trimEnd = Math.min(samples.length, lastActive + padSamples);
+      if (trimEnd - trimStart >= Math.round(actualRate * 0.35)) {
+        samples = samples.subarray(trimStart, trimEnd);
+      }
+    }
+
+    // 4. Normalize peak amplitude if quiet microphone
     let maxPeak = 0;
     for (let i = 0; i < samples.length; i++) {
       const a = Math.abs(samples[i]);
       if (a > maxPeak) maxPeak = a;
     }
-    const gain = (maxPeak > 0.005 && maxPeak < 0.5) ? Math.min(6.0, 0.85 / maxPeak) : 1.0;
+    const gain = (maxPeak > 0.003 && maxPeak < 0.65) ? Math.min(8.0, 0.88 / maxPeak) : 1.0;
 
     const buffer = new ArrayBuffer(44 + samples.length * 2);
     const view = new DataView(buffer);
@@ -1189,7 +1328,6 @@
       }
     };
 
-    const actualRate = (inputSampleRate > targetRate) ? targetRate : inputSampleRate;
     writeString(0, "RIFF");
     view.setUint32(4, 36 + samples.length * 2, true);
     writeString(8, "WAVE");
@@ -1215,11 +1353,38 @@
 
   let lastAutoFinishTime = 0;
 
+  async function requestBackendSTT(wavBuffer, isPartial) {
+    const host = window.location.hostname || "127.0.0.1";
+    const q = `lang=${encodeURIComponent(currentLang)}${isPartial ? "&partial=true" : ""}`;
+    const sttUrls = [
+      `http://${host}:8000/api/v1/agent/stt?${q}`,
+      `http://127.0.0.1:8000/api/v1/agent/stt?${q}`,
+      `http://localhost:8000/api/v1/agent/stt?${q}`
+    ];
+
+    for (const url of sttUrls) {
+      try {
+        const resp = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "audio/wav" },
+          body: wavBuffer
+        });
+        if (resp.ok) {
+          return await resp.json();
+        }
+      } catch (e) {}
+    }
+    return null;
+  }
+
   async function toggleVoiceInput(targetInputEl, micBtnEl) {
+    if (targetInputEl) lastTargetInputEl = targetInputEl;
+    if (micBtnEl) lastMicBtnEl = micBtnEl;
+
     // If already listening, clicking Mic finishes recording & processes speech immediately!
     if (isListening) {
       if (typeof activeFinishRecordingFn === "function") {
-        activeFinishRecordingFn();
+        activeFinishRecordingFn(false);
       } else {
         stopVoiceInput();
         setVoiceStatus("", "");
@@ -1227,7 +1392,7 @@
       return;
     }
 
-    // If currently processing or auto-finished less than 1200ms ago, ignore accidental stop click
+    // If currently processing or auto-finished less than 1200ms ago, ignore accidental double-click
     if ((micBtnEl && micBtnEl.classList.contains("processing")) || (Date.now() - lastAutoFinishTime < 1200)) {
       return;
     }
@@ -1235,9 +1400,9 @@
     stopSpeechPlayback();
     activeMicBtn = micBtnEl;
     const langMeta = getLanguageMeta(currentLang);
+    let latestLiveTranscript = "";
 
-    // Primary Method: Standard Web Audio API + Backend STT (/api/v1/agent/stt)
-    // Works reliably in Brave, Edge, Chrome, Firefox, and Playwright without Chrome socket "(network)" errors
+    // Primary Method: Standard Web Audio API + Simultaneous Rolling Partial STT + Parallel Interim SpeechRecognition
     if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === "function") {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -1251,10 +1416,14 @@
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioCtx();
         const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        analyser.smoothingTimeConstant = 0.72;
         const processor = audioCtx.createScriptProcessor(4096, 1, 1);
 
         activeMediaStream = stream;
         activeAudioContext = audioCtx;
+        activeAnalyserNode = analyser;
         activeScriptNode = processor;
         isListening = true;
 
@@ -1264,13 +1433,73 @@
           const lbl = micBtnEl.querySelector(".mic-btn-label");
           if (lbl) lbl.textContent = t("voice.listening").replace("🎙 ", "");
         }
-        setVoiceStatus(`${t("voice.listening")} (${langMeta.native})`, "status-listening");
+        setVoiceStatus("", "");
+        updateLiveTranscriptDock(
+          "listening",
+          `${t("voice.listening")} (${langMeta.native}) — Speak now, words appear here simultaneously...`,
+          true
+        );
+        startWaveformAnimation(analyser);
 
         const pcmChunks = [];
         let heardSpeech = false;
         let lastSpeechTime = Date.now();
         const startTime = Date.now();
         let finished = false;
+        let partialInFlight = false;
+
+        // Optional Parallel Browser SpeechRecognition for zero-latency interim word streaming when supported
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRec) {
+          try {
+            const rec = new SpeechRec();
+            rec.lang = BCP47_MAP[currentLang] || "en-IN";
+            rec.continuous = true;
+            rec.interimResults = true;
+            rec.onresult = (ev) => {
+              if (!isListening || finished) return;
+              let combined = "";
+              for (let i = 0; i < ev.results.length; i++) {
+                combined += ev.results[i][0].transcript + " ";
+              }
+              combined = combined.trim();
+              if (combined) {
+                latestLiveTranscript = combined;
+                if (targetInputEl) targetInputEl.value = combined;
+                updateLiveTranscriptDock("listening", combined, false);
+              }
+            };
+            rec.onerror = () => {};
+            rec.onend = () => {};
+            rec.start();
+            activeRecognition = rec;
+          } catch (e) {}
+        }
+
+        // Rolling ~800ms partial WAV transcription so words stream simultaneously down below across ALL browsers
+        activePartialInterval = setInterval(async () => {
+          if (!isListening || finished || partialInFlight || pcmChunks.length === 0) return;
+          const elapsed = Date.now() - startTime;
+          if (!heardSpeech && elapsed < 700) return;
+          partialInFlight = true;
+          try {
+            const sampleRate = audioCtx.sampleRate || 44100;
+            const snapshot = pcmChunks.slice();
+            const partialWav = encodePCMToWav(snapshot, sampleRate);
+            const partialData = await requestBackendSTT(partialWav, true);
+            if (isListening && !finished && partialData && partialData.success && partialData.transcript) {
+              const partialText = partialData.transcript.trim();
+              if (partialText) {
+                latestLiveTranscript = partialText;
+                if (targetInputEl) targetInputEl.value = partialText;
+                updateLiveTranscriptDock("listening", partialText, false);
+              }
+            }
+          } catch (e) {
+          } finally {
+            partialInFlight = false;
+          }
+        }, 800);
 
         const finishAndTranscribe = async (wasAuto) => {
           if (finished) return;
@@ -1280,6 +1509,13 @@
 
           const sampleRate = audioCtx.sampleRate || 44100;
           cleanupAudioRecording();
+          if (activeRecognition) {
+            try {
+              activeRecognition.onend = null;
+              activeRecognition.stop();
+            } catch (e) {}
+            activeRecognition = null;
+          }
 
           if (micBtnEl) {
             micBtnEl.classList.remove("listening");
@@ -1287,43 +1523,33 @@
             const lbl = micBtnEl.querySelector(".mic-btn-label");
             if (lbl) lbl.textContent = t("voice.mic_btn").replace("🎙 ", "");
           }
-          setVoiceStatus(t("voice.processing"), "status-processing");
+          updateLiveTranscriptDock(
+            "processing",
+            latestLiveTranscript || t("voice.processing"),
+            !latestLiveTranscript
+          );
 
           try {
             const wavBuffer = encodePCMToWav(pcmChunks, sampleRate);
-            const host = window.location.hostname || "127.0.0.1";
-            const sttUrls = [
-              `http://${host}:8000/api/v1/agent/stt?lang=${encodeURIComponent(currentLang)}`,
-              `http://127.0.0.1:8000/api/v1/agent/stt?lang=${encodeURIComponent(currentLang)}`,
-              `http://localhost:8000/api/v1/agent/stt?lang=${encodeURIComponent(currentLang)}`
-            ];
-
-            let sttData = null;
-            for (const url of sttUrls) {
-              try {
-                const resp = await fetch(url, {
-                  method: "POST",
-                  headers: { "Content-Type": "audio/wav" },
-                  body: wavBuffer
-                });
-                if (resp.ok) {
-                  sttData = await resp.json();
-                  break;
-                }
-              } catch (e) {}
-            }
+            const sttData = await requestBackendSTT(wavBuffer, false);
 
             if (micBtnEl) micBtnEl.classList.remove("processing");
 
-            if (sttData && sttData.success && sttData.transcript) {
-              const spokenText = sttData.transcript.trim();
-              if (targetInputEl) targetInputEl.value = spokenText;
+            const finalText = (sttData && sttData.success && sttData.transcript)
+              ? sttData.transcript.trim()
+              : latestLiveTranscript.trim();
+
+            if (finalText) {
+              lastSpokenTranscript = finalText;
+              if (targetInputEl) targetInputEl.value = finalText;
               setVoiceStatus("", "");
+              // Keep the spoken text visible down below in the dock so the user can check what they said!
+              updateLiveTranscriptDock("completed", finalText, false);
               if (window.ORCA_AGENT && typeof window.ORCA_AGENT.ask === "function") {
-                window.ORCA_AGENT.ask(spokenText);
+                window.ORCA_AGENT.ask(finalText);
               }
             } else {
-              setVoiceStatus(t("voice.err_unclear"), "status-error");
+              updateLiveTranscriptDock("error", t("voice.err_unclear"), true);
               if (micBtnEl) {
                 micBtnEl.classList.add("error");
                 setTimeout(() => micBtnEl.classList.remove("error"), 3000);
@@ -1331,7 +1557,15 @@
             }
           } catch (err) {
             if (micBtnEl) micBtnEl.classList.remove("processing");
-            setVoiceStatus(t("voice.err_unclear"), "status-error");
+            if (latestLiveTranscript) {
+              lastSpokenTranscript = latestLiveTranscript;
+              updateLiveTranscriptDock("completed", latestLiveTranscript, false);
+              if (window.ORCA_AGENT && typeof window.ORCA_AGENT.ask === "function") {
+                window.ORCA_AGENT.ask(latestLiveTranscript);
+              }
+            } else {
+              updateLiveTranscriptDock("error", t("voice.err_unclear"), true);
+            }
           }
         };
 
@@ -1342,7 +1576,7 @@
           const input = e.inputBuffer.getChannelData(0);
           pcmChunks.push(new Float32Array(input));
 
-          // Compute RMS energy for automatic silence endpointing
+          // Compute RMS energy for adaptive voice activity detection
           let sumSq = 0;
           for (let i = 0; i < input.length; i++) {
             sumSq += input[i] * input[i];
@@ -1350,25 +1584,28 @@
           const rms = Math.sqrt(sumSq / input.length);
           const now = Date.now();
 
-          if (rms > 0.012) {
+          if (rms > 0.009) {
             heardSpeech = true;
             lastSpeechTime = now;
           }
 
-          // Auto-stop 1.3s after user finishes speaking, or after 4.5s max
-          if ((heardSpeech && (now - lastSpeechTime > 1300) && (now - startTime > 1600)) || (now - startTime > 4500)) {
+          // Auto-stop 1.15s after user pauses speaking, or after 4.8s max single-utterance window
+          const silenceElapsed = now - lastSpeechTime;
+          const totalElapsed = now - startTime;
+          if ((heardSpeech && silenceElapsed > 1150 && totalElapsed > 1500) || totalElapsed > 4800) {
             finishAndTranscribe(true);
           }
         };
 
-        source.connect(processor);
+        source.connect(analyser);
+        analyser.connect(processor);
         processor.connect(audioCtx.destination);
         return;
       } catch (permErr) {
         cleanupAudioRecording();
         isListening = false;
         if (permErr && (permErr.name === "NotAllowedError" || permErr.name === "PermissionDeniedError")) {
-          setVoiceStatus(t("voice.err_denied"), "status-error");
+          updateLiveTranscriptDock("error", t("voice.err_denied"), true);
           if (micBtnEl) {
             micBtnEl.classList.add("error");
             setTimeout(() => micBtnEl.classList.remove("error"), 3000);
@@ -1381,7 +1618,7 @@
     // Fallback if getUserMedia is unavailable
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRec) {
-      setVoiceStatus(t("voice.err_unsupported"), "status-error");
+      updateLiveTranscriptDock("error", t("voice.err_unsupported"), true);
       return;
     }
   }
@@ -1535,6 +1772,50 @@
       });
     }
 
+    // Wire Live Transcript Dock buttons (Done, Edit, Speak Again, Dismiss)
+    document.addEventListener("click", (e) => {
+      const doneBtn = e.target.closest(".orca-transcript-done-btn");
+      if (doneBtn) {
+        e.preventDefault();
+        if (isListening && typeof activeFinishRecordingFn === "function") {
+          activeFinishRecordingFn(false);
+        }
+        return;
+      }
+
+      const editBtn = e.target.closest(".orca-transcript-edit-btn");
+      if (editBtn) {
+        e.preventDefault();
+        const inputEl = lastTargetInputEl || document.getElementById("workspace-query-input");
+        if (inputEl && lastSpokenTranscript) {
+          inputEl.value = lastSpokenTranscript;
+          inputEl.focus();
+        }
+        return;
+      }
+
+      const retryBtn = e.target.closest(".orca-transcript-retry-btn");
+      if (retryBtn) {
+        e.preventDefault();
+        const inputEl = lastTargetInputEl || document.getElementById("workspace-query-input");
+        const micEl = lastMicBtnEl || document.getElementById("workspace-mic-btn");
+        if (inputEl && micEl) {
+          toggleVoiceInput(inputEl, micEl);
+        }
+        return;
+      }
+
+      const closeBtn = e.target.closest(".orca-transcript-close-btn");
+      if (closeBtn) {
+        e.preventDefault();
+        if (isListening) {
+          stopVoiceInput();
+        }
+        updateLiveTranscriptDock("hidden", "", false);
+        return;
+      }
+    });
+
     // Delegated listener for any "[ 🔊 Speak ]" button inside Ask ORCA streams
     document.addEventListener("click", (e) => {
       const speakBtn = e.target.closest(".orca-speak-btn");
@@ -1571,6 +1852,7 @@
     applyUITranslations,
     toggleVoiceInput,
     stopVoiceInput,
+    updateLiveTranscriptDock,
     speakText,
     stopSpeechPlayback
   };

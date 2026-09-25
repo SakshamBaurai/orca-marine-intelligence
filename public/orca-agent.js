@@ -227,6 +227,10 @@
     }
     if (depConfirmBtn) {
       depConfirmBtn.addEventListener("click", () => {
+        if (window.ORCA_NAVIGATION && typeof window.ORCA_NAVIGATION.executeTakeMeThere === "function" && currentTargetSpot) {
+          window.ORCA_NAVIGATION.executeTakeMeThere(currentTargetSpot);
+          return;
+        }
         if (!currentTargetSpot || !sortedPortsForSpot.length) return;
         const selectedIdx = depPortSelect ? parseInt(depPortSelect.value, 10) : 0;
         const chosenPort = sortedPortsForSpot[selectedIdx] || sortedPortsForSpot[0];
@@ -286,8 +290,23 @@
         const takeBtn = e.target.closest(".spot-take-me-btn");
         if (!takeBtn) return;
         const spotIdx = parseInt(takeBtn.getAttribute("data-spot-idx"), 10);
-        if (Number.isFinite(spotIdx) && lastSessionSpots[spotIdx]) {
-          const spot = lastSessionSpots[spotIdx];
+        const spot = (Number.isFinite(spotIdx) && lastSessionSpots[spotIdx])
+          ? lastSessionSpots[spotIdx]
+          : lastSessionSpots[0];
+        if (spot) {
+          takeUserToSpot(spot, lastSessionOriginPort);
+        }
+      });
+    }
+    if (legacyHistoryEl) {
+      legacyHistoryEl.addEventListener("click", (e) => {
+        const takeBtn = e.target.closest(".spot-take-me-btn");
+        if (!takeBtn) return;
+        const spotIdx = parseInt(takeBtn.getAttribute("data-spot-idx"), 10);
+        const spot = (Number.isFinite(spotIdx) && lastSessionSpots[spotIdx])
+          ? lastSessionSpots[spotIdx]
+          : lastSessionSpots[0];
+        if (spot) {
           takeUserToSpot(spot, lastSessionOriginPort);
         }
       });
@@ -370,8 +389,14 @@
   }
 
   function closeWorkspace() {
-    if (!workspaceEl) return;
-    workspaceEl.classList.remove("expanded");
+    if (workspaceEl) {
+      workspaceEl.classList.remove("expanded");
+    }
+    if (legacyWidgetEl) {
+      legacyWidgetEl.classList.add("minimized");
+      legacyWidgetEl.style.display = "none";
+      if (legacyLauncherBtn) legacyLauncherBtn.style.display = "flex";
+    }
     if (window.ORCA_I18N) {
       if (typeof window.ORCA_I18N.stopSpeechPlayback === "function") window.ORCA_I18N.stopSpeechPlayback();
       if (typeof window.ORCA_I18N.stopVoiceInput === "function") window.ORCA_I18N.stopVoiceInput();
@@ -647,7 +672,7 @@
     if (depCardinalDir) depCardinalDir.textContent = `${cardinal} heading`;
   }
 
-  // Execute Navigation once departure port is confirmed
+  // Execute Navigation once departure port is confirmed or "Take me there" is clicked
   function executeTakeMeThere(spot, originPort) {
     if (!spot) return;
     hideDepartureModal();
@@ -657,6 +682,21 @@
       originPort = (window.ORCA_STATE && window.ORCA_STATE.selectedDeparture)
         ? window.ORCA_STATE.selectedDeparture
         : (activeRecommendationSession.originPort || lastSessionOriginPort || { name: "Mumbai Port", lat: 18.9438, lon: 72.8428 });
+    }
+
+    // Resolve canonical coordinates
+    const canonical = getCanonicalCoordinates(spot);
+    if (canonical) {
+      spot.lat = canonical.lat;
+      spot.lon = canonical.lon;
+      spot.latitude = canonical.lat;
+      spot.longitude = canonical.lon;
+    }
+
+    // Delegate to unified ORCA_NAVIGATION engine so Active Route Card (#orca-active-route-card) is also displayed
+    if (window.ORCA_NAVIGATION && typeof window.ORCA_NAVIGATION.executeTakeMeThere === "function") {
+      window.ORCA_NAVIGATION.executeTakeMeThere(spot, originPort);
+      return;
     }
 
     if (window.ORCA_STATE) {
@@ -756,9 +796,16 @@
     }
   }
 
-  // "Take me there" Navigation Handler opens Departure Port selection dialog
+  // "Take me there" Navigation Handler: closes Ask ORCA workspace and navigates directly to the spot on the map
   function takeUserToSpot(spot, originPort) {
-    openDepartureModal(spot, originPort);
+    if (!spot) return;
+    if (workspaceShowGlobeChk && !workspaceShowGlobeChk.checked) {
+      showGlobeGateModal(() => {
+        takeUserToSpot(spot, originPort);
+      });
+      return;
+    }
+    executeTakeMeThere(spot, originPort || lastSessionOriginPort);
   }
 
   // Current view/location context collector
@@ -867,6 +914,10 @@
     let safe = escapeHTML(text);
     // Replace **bold** with <strong>bold</strong>
     safe = safe.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    // Turn bracketed [ Take me there ] / [ मुझे वहाँ ले चलें ... ] into clickable Take me there buttons
+    safe = safe.replace(/\[\s*([^\]]*?(?:Take me there|Mujhe Wahan Le Chalein|ले चलें|घेऊन चला|લઈ જાઓ|കൊണ്ടുപോകൂ|அழைத்துச்|తీసుకెళ్లు|ಕರೆದೊಯ್ಯಿರಿ|নিয়ে চলুন|ਲੈ ਚੱਲੋ|ନେଇଯାଆନ୍ତୁ)[^\]]*?)\s*\]/gi, (match, inner) => {
+      return `<button type="button" class="spot-take-me-btn" data-spot-idx="0" style="margin: 4px 0; display: inline-flex; align-items: center; gap: 6px;"><span>${inner.trim()}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>`;
+    });
     // Replace newlines with <br/>
     safe = safe.replace(/\n/g, "<br/>");
     return safe;
@@ -1006,6 +1057,11 @@
     if (Array.isArray(responseData.actions)) {
       executeSafeActions(responseData.actions, shouldShowGlobe);
     }
+
+    // If user explicitly asked "Take me there" / "Take me to there", navigate directly on the map and close workspace
+    if (/(\btake me (to )?there\b|\bfly there\b|\bnavigate there\b|\bgo there\b|\bwahan le chal|\bले चलें)/i.test(query) && lastSessionSpots.length > 0) {
+      takeUserToSpot(lastSessionSpots[0], lastSessionOriginPort);
+    }
   }
 
   function appendUserMessage(text) {
@@ -1134,12 +1190,22 @@
     if (legacyHistoryEl) {
       const botDiv = document.createElement("div");
       botDiv.className = "orca-message ai-bot-msg";
+      let drawerSpotsHtml = "";
+      if (Array.isArray(data.spots) && data.spots.length > 0) {
+        drawerSpotsHtml = `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">` +
+          data.spots.map((sp, idx) => `
+            <button type="button" class="spot-take-me-btn" data-spot-idx="${idx}" style="font-size:10.5px; padding:5px 10px;">
+              <span>#0${idx + 1} ${escapeHTML(takeMeLabel)} (${sp.distance_km || 34.3} km)</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          `).join("") + `</div>`;
+      }
       botDiv.innerHTML = `
         <div class="ai-sender">
           <span><span class="ai-avatar-mini">🐋</span> ORCA Cognitive Agent</span>
           <button type="button" class="orca-speak-btn" title="Speak Answer Aloud">${escapeHTML(speakLabel)}</button>
         </div>
-        <div class="ai-content">${formatMarkdownText(messageText)}</div>
+        <div class="ai-content">${formatMarkdownText(messageText)}${drawerSpotsHtml}</div>
       `;
       legacyHistoryEl.appendChild(botDiv);
       legacyHistoryEl.scrollTop = legacyHistoryEl.scrollHeight;
@@ -1340,7 +1406,11 @@ Physical Arabian Sea telemetry is loaded in memory. Active coastal stations (Mum
     isWorkspaceOpen: isWorkspaceOpen,
     takeUserToSpot: takeUserToSpot,
     openDepartureModalForSpot: function(spot) {
-      openDepartureModal(spot);
+      if (window.ORCA_NAVIGATION && typeof window.ORCA_NAVIGATION.openDepartureModalForSpot === "function") {
+        window.ORCA_NAVIGATION.openDepartureModalForSpot(spot);
+      } else {
+        openDepartureModal(spot);
+      }
     },
     gatherContext: gatherActiveContext,
     executeSafeActions: executeSafeActions

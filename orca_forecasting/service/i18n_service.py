@@ -678,36 +678,40 @@ def translate_agent_response(result: Dict[str, Any], target_lang: Optional[str] 
     return out
 
 
-def transcribe_wav_bytes(wav_bytes: bytes, lang: str = "en") -> str:
+_SR_RECOGNIZER = sr.Recognizer() if sr is not None else None
+
+
+def transcribe_wav_bytes(wav_bytes: bytes, lang: str = "en", partial: bool = False) -> str:
     """Transcribe 16-bit PCM WAV audio bytes using Google Speech Recognition over HTTPS.
 
     Works across all browsers (Brave, Edge, Chrome, Firefox, Safari) without
     relying on Chrome-restricted webkitSpeechRecognition network sockets.
+    When partial=True (rolling real-time caption preview), skips secondary fallback
+    for minimum latency.
     """
     if not wav_bytes or len(wav_bytes) < 100:
         raise ValueError("Empty or too-short audio buffer.")
-    if sr is None:
+    if sr is None or _SR_RECOGNIZER is None:
         raise RuntimeError("SpeechRecognition package is not installed in backend environment.")
 
     lang_key = (lang or "en").strip().lower()
     bcp47 = STT_BCP47_MAP.get(lang_key, "en-IN")
 
-    recognizer = sr.Recognizer()
     with sr.AudioFile(io.BytesIO(wav_bytes)) as source:
-        audio_data = recognizer.record(source)
+        audio_data = _SR_RECOGNIZER.record(source)
 
     # Primary recognition in selected language
     try:
-        text = recognizer.recognize_google(audio_data, language=bcp47)
+        text = _SR_RECOGNIZER.recognize_google(audio_data, language=bcp47)
         if text and text.strip():
             return text.strip()
     except sr.UnknownValueError:
         pass
 
-    # Fallback recognition in en-IN (catches Hinglish / English spoken while in an Indian language mode)
-    if bcp47 != "en-IN":
+    # Fallback recognition in en-IN only on final transcription (catches Hinglish / English spoken while in an Indian language mode)
+    if not partial and bcp47 != "en-IN":
         try:
-            text_en = recognizer.recognize_google(audio_data, language="en-IN")
+            text_en = _SR_RECOGNIZER.recognize_google(audio_data, language="en-IN")
             if text_en and text_en.strip():
                 return text_en.strip()
         except sr.UnknownValueError:

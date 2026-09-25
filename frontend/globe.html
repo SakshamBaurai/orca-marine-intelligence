@@ -10,10 +10,10 @@
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
 <!-- CesiumJS CSS -->
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet"/>
-<!-- Google Fonts: Inter & JetBrains Mono -->
+<!-- Google Fonts: Futura Geometric (Jost), Inter & JetBrains Mono -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- Three.js (kept for compatibility but globe now uses Cesium) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <!-- OrbitControls -->
@@ -23,7 +23,7 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!-- ORCA Styles -->
-<link href="styles.css?v=4" rel="stylesheet"/>
+<link href="styles.css?v=5" rel="stylesheet"/>
 <!-- Override Cesium widget to fill the container and match dark theme -->
 <style>
     #globe-canvas-container .cesium-viewer,
@@ -55,10 +55,7 @@
        ========================================================= -->
 <header id="orca-top-header">
 <div class="header-brand">
-<svg class="brand-logo" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
-<circle cx="12" cy="12" r="10"></circle>
-<path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"></path>
-</svg>
+<img src="orca-logo.png" alt="ORCA Logo" class="brand-logo" />
 <div class="brand-titles">
 <h1 class="brand-h1"><span class="brand-name">ORCA</span> <span class="live-badge">LIVE TELEMETRY</span></h1>
 <p>Marine Intelligence Assistant • <span id="header-station-name">Kochi (Kerala)</span></p>
@@ -539,7 +536,7 @@
 <!-- =========================================================
      ORCA AI DRAWER (side panel chat widget)
      ========================================================= -->
-<div class="hud-panel orca-ai-drawer" id="orca-ai-widget">
+<div class="hud-panel orca-ai-drawer minimized" id="orca-ai-widget" style="display: none;">
   <div class="ai-header" id="orca-ai-header">
     <div class="ai-header-left">
       <span class="ai-avatar-pulse">🐋</span>
@@ -579,6 +576,28 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
       </button>
     </form>
+    <div id="drawer-live-transcript-dock" class="orca-live-transcript-dock orca-drawer-transcript-dock" style="display: none;">
+      <div class="orca-transcript-left">
+        <span class="orca-transcript-rec-dot"></span>
+        <div class="orca-voice-bars" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="orca-transcript-center">
+        <div class="orca-transcript-header-row">
+          <span class="orca-transcript-stage-label">LIVE VOICE TRANSCRIPT</span>
+          <span class="orca-transcript-lang-pill">English</span>
+        </div>
+        <div class="orca-live-transcript-text" id="drawer-live-transcript-text">Listening...</div>
+      </div>
+      <div class="orca-transcript-actions">
+        <button type="button" class="orca-transcript-btn orca-transcript-done-btn" title="Finish &amp; Send">✓</button>
+        <button type="button" class="orca-transcript-btn orca-transcript-edit-btn" title="Edit" style="display: none;">✏️</button>
+        <button type="button" class="orca-transcript-btn orca-transcript-retry-btn" title="Speak Again" style="display: none;">🔄</button>
+        <button type="button" class="orca-transcript-btn orca-transcript-close-btn" title="Dismiss">✕</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -653,6 +672,29 @@
         <button type="submit" id="workspace-submit" title="Send query to ORCA">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
         </button>
+      </div>
+      <!-- Live Simultaneous Voice Transcript Dock (Jabra / ChatGPT style down below) -->
+      <div id="workspace-live-transcript-dock" class="orca-live-transcript-dock" style="display: none;">
+        <div class="orca-transcript-left">
+          <span class="orca-transcript-rec-dot"></span>
+          <div class="orca-voice-bars" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="orca-transcript-center">
+          <div class="orca-transcript-header-row">
+            <span class="orca-transcript-stage-label">LIVE VOICE TRANSCRIPT</span>
+            <span class="orca-transcript-lang-pill">English</span>
+          </div>
+          <div class="orca-live-transcript-text" id="workspace-live-transcript-text">Listening... speak now and your words will appear here simultaneously.</div>
+        </div>
+        <div class="orca-transcript-actions">
+          <button type="button" class="orca-transcript-btn orca-transcript-done-btn" title="Finish &amp; Send">✓ Done</button>
+          <button type="button" class="orca-transcript-btn orca-transcript-edit-btn" title="Edit in input box" style="display: none;">✏️ Edit</button>
+          <button type="button" class="orca-transcript-btn orca-transcript-retry-btn" title="Speak Again" style="display: none;">🔄 Speak Again</button>
+          <button type="button" class="orca-transcript-btn orca-transcript-close-btn" title="Dismiss">✕</button>
+        </div>
       </div>
       <div class="workspace-form-footer">
         <label class="toggle-globe-label" title="When enabled, geographic results immediately update 3D camera and route">
@@ -959,12 +1001,12 @@
        DATA + APPLICATION
        ========================================================= -->
 <script src="ocean_data.js?v=3"></script>
-<script src="cesium-globe.js?v=5"></script>
-<script src="app.js?v=10"></script>
+<script src="cesium-globe.js?v=6"></script>
+<script src="app.js?v=11"></script>
 <script src="orca-live-bridge.js?v=3"></script>
-<script src="orca-navigation.js?v=1"></script>
-<script src="orca-i18n.js?v=1"></script>
-<script src="orca-agent.js?v=2"></script>
+<script src="orca-navigation.js?v=4"></script>
+<script src="orca-i18n.js?v=4"></script>
+<script src="orca-agent.js?v=4"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
       const infoBox = document.getElementById("port-weather-info");

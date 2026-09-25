@@ -1228,7 +1228,7 @@
 
 
     /*
-     * India
+     * India Peninsular Coastline (Arabian Sea & Water Joint Area Only)
      */
 
     drawLand([
@@ -1243,13 +1243,7 @@
       [80, 13],
       [82, 16],
       [86, 20],
-      [89, 22],
-      [88, 26],
-      [78, 30],
-      [74, 34],
-      [71, 30],
-      [68, 26],
-      [68, 24]
+      [89, 22]
 
     ]);
 

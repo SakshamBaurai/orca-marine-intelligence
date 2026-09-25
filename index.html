@@ -10,10 +10,10 @@
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
 <!-- CesiumJS CSS -->
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet"/>
-<!-- Google Fonts: Inter & JetBrains Mono -->
+<!-- Google Fonts: Futura Geometric (Jost), Inter & JetBrains Mono -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- Three.js (kept for compatibility but globe now uses Cesium) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <!-- OrbitControls -->
@@ -23,7 +23,7 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!-- ORCA Styles -->
-<link href="styles.css?v=4" rel="stylesheet"/>
+<link href="styles.css?v=5" rel="stylesheet"/>
 <!-- Override Cesium widget to fill the container and match dark theme -->
 <style>
     #globe-canvas-container .cesium-viewer,
@@ -55,10 +55,7 @@
        ========================================================= -->
 <header id="orca-top-header">
 <div class="header-brand">
-<svg class="brand-logo" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
-<circle cx="12" cy="12" r="10"></circle>
-<path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"></path>
-</svg>
+<img src="orca-logo.png" alt="ORCA Logo" class="brand-logo" />
 <div class="brand-titles">
 <h1 class="brand-h1"><span class="brand-name">ORCA</span> <span class="live-badge">LIVE TELEMETRY</span></h1>
 <p>Marine Intelligence Assistant • <span id="header-station-name">Kochi (Kerala)</span></p>
@@ -111,10 +108,31 @@
 </svg>
         Orbit: Off
       </button>
+<button class="hud-btn hud-btn-primary" id="btn-ask-orca" title="Open ORCA Marine Intelligence Command">
+  <span class="orca-btn-dot"></span>
+  <span class="orca-btn-text">ASK ORCA</span>
+</button>
 <button class="hud-btn" id="btn-data-key" title="Open Oceanographic Data Key &amp; Metric Legend">
   <span style="font-size: 13px; margin-right: 3px;">ℹ️</span>
   <span>DATA KEY</span>
 </button>
+<div class="orca-lang-switcher" title="Select ORCA Interface &amp; Voice Language">
+  <span class="orca-lang-icon">🌐</span>
+  <select id="orca-lang-select" class="orca-lang-select" aria-label="Select Language">
+    <option value="en">Language: English</option>
+    <option value="hi">हिन्दी / Hinglish (Hindi)</option>
+    <option value="hinglish">Hinglish (Roman Hindi)</option>
+    <option value="mr">मराठी (Marathi)</option>
+    <option value="gu">ગુજરાતી (Gujarati)</option>
+    <option value="ml">മലയാളം (Malayalam)</option>
+    <option value="ta">தமிழ் (Tamil)</option>
+    <option value="te">తెలుగు (Telugu)</option>
+    <option value="kn">ಕನ್ನಡ (Kannada)</option>
+    <option value="bn">বাংলা (Bengali)</option>
+    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+    <option value="or">ଓଡ଼ିଆ (Odia)</option>
+  </select>
+</div>
 <div id="orca-sea-conditions-indicator" class="orca-sea-indicator" title="Live Port Sea Safety &amp; Weather (Click for details)">
   <div class="sea-ind-icon">🌊</div>
   <div class="sea-ind-body">
@@ -513,7 +531,214 @@
     <span>✕</span> Clear Active Route
   </button>
 </div>
-</aside><footer class="hud-panel" id="bottom-hud">
+</aside>
+
+<!-- =========================================================
+     ORCA AI DRAWER (side panel chat widget)
+     ========================================================= -->
+<div class="hud-panel orca-ai-drawer minimized" id="orca-ai-widget" style="display: none;">
+  <div class="ai-header" id="orca-ai-header">
+    <div class="ai-header-left">
+      <span class="ai-avatar-pulse">🐋</span>
+      <span class="ai-title">ORCA COGNITIVE AGENT</span>
+      <span class="rag-badge live-model-badge" id="ai-status-badge">TOOL-CALLING AI</span>
+    </div>
+    <div class="ai-header-actions">
+      <button type="button" class="ai-drawer-btn" id="ai-drawer-toggle" title="Collapse / Expand Agent Drawer">▼</button>
+    </div>
+  </div>
+  <div class="ai-drawer-body" id="ai-drawer-body">
+    <div class="ai-quick-chips" id="ai-quick-chips">
+      <button type="button" class="ai-chip" data-query="Where is the best fishing spot right now?">🎯 Best Fishing Spot</button>
+      <button type="button" class="ai-chip" data-query="What is the sea surface temperature at Kandla?">🌡️ Kandla SST</button>
+      <button type="button" class="ai-chip" data-query="Are there any active upwelling fronts?">🌊 Active Upwelling</button>
+      <button type="button" class="ai-chip" data-query="What is the marine health index here?">🩺 Marine Health</button>
+      <button type="button" class="ai-chip" data-query="Switch to 2D navigation map">🗺️ Switch to 2D</button>
+    </div>
+    <div class="ai-chat-history" id="ai-chat-history">
+      <div class="orca-message ai-bot-msg">
+        <div class="ai-sender">
+          <span><span class="ai-avatar-mini">🐋</span> ORCA Tool-Calling Agent</span>
+          <button type="button" class="orca-speak-btn" title="Speak Answer Aloud">🔊 Speak</button>
+        </div>
+        <div class="ai-content">
+          Operational. Connected to Copernicus CMEMS, Open-Meteo live atmospheric telemetry, and Isolation Forest ocean anomaly detectors. Ask me about ocean physics, thermal upwelling, potential fishing zones (PFZ), or coastal ports.
+        </div>
+      </div>
+    </div>
+    <form class="ai-chat-form" id="ai-chat-form">
+      <input autocomplete="off" id="ai-chat-input" placeholder="Ask about ocean physics, fishing spots, ports..." type="text"/>
+      <button type="button" id="ai-mic-btn" class="orca-mic-btn" title="Voice Input (Speak in selected language)">
+        <span class="mic-icon">🎙</span>
+        <span class="mic-btn-label">Mic</span>
+      </button>
+      <button type="submit" id="ai-submit-btn" title="Send query">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      </button>
+    </form>
+    <div id="drawer-live-transcript-dock" class="orca-live-transcript-dock orca-drawer-transcript-dock" style="display: none;">
+      <div class="orca-transcript-left">
+        <span class="orca-transcript-rec-dot"></span>
+        <div class="orca-voice-bars" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="orca-transcript-center">
+        <div class="orca-transcript-header-row">
+          <span class="orca-transcript-stage-label">LIVE VOICE TRANSCRIPT</span>
+          <span class="orca-transcript-lang-pill">English</span>
+        </div>
+        <div class="orca-live-transcript-text" id="drawer-live-transcript-text">Listening...</div>
+      </div>
+      <div class="orca-transcript-actions">
+        <button type="button" class="orca-transcript-btn orca-transcript-done-btn" title="Finish &amp; Send">✓</button>
+        <button type="button" class="orca-transcript-btn orca-transcript-edit-btn" title="Edit" style="display: none;">✏️</button>
+        <button type="button" class="orca-transcript-btn orca-transcript-retry-btn" title="Speak Again" style="display: none;">🔄</button>
+        <button type="button" class="orca-transcript-btn orca-transcript-close-btn" title="Dismiss">✕</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating launcher button when drawer is minimized -->
+<button type="button" id="orca-ai-launcher" class="orca-ai-launcher-btn" style="display: none;">
+  <span class="ai-launcher-dot"></span>⚡ ORCA AI
+</button>
+
+<!-- =========================================================
+     ORCA FULLSCREEN AI COMMAND WORKSPACE
+     ========================================================= -->
+<div id="orca-ai-workspace" class="orca-ai-workspace">
+  <div class="workspace-backdrop" id="workspace-backdrop"></div>
+  <div class="workspace-container">
+    <div class="workspace-header">
+      <div class="workspace-header-brand">
+        <div class="workspace-pill-badge"><span class="pulse-cyan-dot"></span> ORCA INTELLIGENCE COMMAND</div>
+        <h2 class="workspace-title">Marine Intelligence &amp; Autonomous Navigation Layer</h2>
+      </div>
+      <button type="button" class="workspace-close-btn" id="workspace-close-btn" title="Return to Globe (Esc)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Return to Globe</span>
+      </button>
+    </div>
+
+    <!-- Suggested Questions -->
+    <div class="workspace-prompts-section">
+      <div class="prompts-label">SUGGESTED COMMANDS</div>
+      <div class="workspace-prompt-chips" id="workspace-quick-chips">
+        <button type="button" class="prompt-chip" data-query="What are the best fishing spots from Mumbai?">🎯 Best fishing spots from Mumbai</button>
+        <button type="button" class="prompt-chip" data-query="Show nearby fishing zones">🐟 Find nearby fishing zones</button>
+        <button type="button" class="prompt-chip" data-query="Find the healthiest zone">🩺 Find the healthiest zone</button>
+        <button type="button" class="prompt-chip" data-query="Calculate distance from Mumbai Port">📏 Distance from Mumbai Port</button>
+        <button type="button" class="prompt-chip" data-query="What is the 12 NM regulatory boundary?">⚖️ 12 NM regulatory boundary</button>
+        <button type="button" class="prompt-chip" data-query="What is the weather in Mumbai?">🌦️ Mumbai coastal weather</button>
+      </div>
+    </div>
+
+    <!-- Message & Intelligence Card Stream -->
+    <div class="workspace-stream" id="workspace-stream">
+      <div class="workspace-msg workspace-msg-bot">
+        <div class="workspace-msg-sender">
+          <span class="workspace-avatar">🐋</span>
+          <span class="sender-name">ORCA Marine Intelligence</span>
+          <span class="verified-tag">12 NM BOUNDARY HARD FILTER ACTIVE</span>
+          <button type="button" class="orca-speak-btn" title="Speak Answer Aloud">🔊 Speak</button>
+        </div>
+        <div class="workspace-msg-content" id="orca-welcome-msg-text">
+          Operational. Directly coupled to Copernicus Marine Service (CMEMS) numerical models, Sentinel-3 satellite ocean color arrays, and the Maritime Zones of India regulatory boundary.<br/><br/>
+          Ask natural-language queries about fishing grounds, departure routes, coastal ports, or marine ecosystem health.
+        </div>
+      </div>
+    </div>
+
+    <!-- Contextual Loading Progress State -->
+    <div class="workspace-progress" id="workspace-progress" style="display: none;">
+      <div class="workspace-progress-track"><div class="workspace-progress-bar" id="workspace-progress-bar"></div></div>
+      <div class="workspace-progress-status" id="workspace-progress-status">ORCA is analyzing marine conditions...</div>
+    </div>
+
+    <!-- Voice Recognition Status Banner -->
+    <div id="workspace-voice-status" class="orca-voice-status" style="display: none;"></div>
+
+    <!-- Command Input Bar -->
+    <form class="workspace-form" id="workspace-form">
+      <div class="workspace-input-row">
+        <input type="text" id="workspace-query-input" autocomplete="off" placeholder="What would you like to know? e.g. Where should I fish from Mumbai?" />
+        <button type="button" id="workspace-mic-btn" class="orca-mic-btn" title="Voice Input (Speak in selected language)">
+          <span class="mic-icon">🎙</span>
+          <span class="mic-btn-label">Mic</span>
+        </button>
+        <button type="submit" id="workspace-submit" title="Send query to ORCA">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+      <!-- Live Simultaneous Voice Transcript Dock (Jabra / ChatGPT style down below) -->
+      <div id="workspace-live-transcript-dock" class="orca-live-transcript-dock" style="display: none;">
+        <div class="orca-transcript-left">
+          <span class="orca-transcript-rec-dot"></span>
+          <div class="orca-voice-bars" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="orca-transcript-center">
+          <div class="orca-transcript-header-row">
+            <span class="orca-transcript-stage-label">LIVE VOICE TRANSCRIPT</span>
+            <span class="orca-transcript-lang-pill">English</span>
+          </div>
+          <div class="orca-live-transcript-text" id="workspace-live-transcript-text">Listening... speak now and your words will appear here simultaneously.</div>
+        </div>
+        <div class="orca-transcript-actions">
+          <button type="button" class="orca-transcript-btn orca-transcript-done-btn" title="Finish &amp; Send">✓ Done</button>
+          <button type="button" class="orca-transcript-btn orca-transcript-edit-btn" title="Edit in input box" style="display: none;">✏️ Edit</button>
+          <button type="button" class="orca-transcript-btn orca-transcript-retry-btn" title="Speak Again" style="display: none;">🔄 Speak Again</button>
+          <button type="button" class="orca-transcript-btn orca-transcript-close-btn" title="Dismiss">✕</button>
+        </div>
+      </div>
+      <div class="workspace-form-footer">
+        <label class="toggle-globe-label" title="When enabled, geographic results immediately update 3D camera and route">
+          <input type="checkbox" id="toggle-show-globe" checked />
+          <span class="custom-chk"></span>
+          <span>Show result on Globe</span>
+        </label>
+        <div class="workspace-disclaimer">Zero hallucinations • Copernicus CMEMS physical forecast • 12 NM regulated</div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================
+     SHOW RESULT ON GLOBE REQUIRED MODAL
+     ========================================================= -->
+<div id="orca-globe-gate-modal" class="orca-modal-backdrop" style="display: none;">
+  <div class="orca-modal-panel">
+    <div class="orca-modal-header">
+      <div class="orca-modal-title">
+        <span class="orca-modal-icon">🌐</span>
+        <span>Enable Globe Navigation</span>
+      </div>
+      <button type="button" id="orca-gate-modal-close" class="orca-modal-close">×</button>
+    </div>
+    <div class="orca-modal-body">
+      <p class="orca-modal-text">
+        To navigate to this fishing zone, plot sea routes, and view real-time 3D telemetry, please enable the <strong>"Show result on Globe"</strong> option.
+      </p>
+      <div class="orca-gate-checkbox-prompt">
+        <label class="toggle-globe-label">
+          <input type="checkbox" id="gate-confirm-checkbox" />
+          <span>Enable "Show result on Globe"</span>
+        </label>
+      </div>
+    </div>
+    <div class="orca-modal-footer">
+      <button type="button" id="orca-gate-cancel-btn" class="orca-modal-btn orca-btn-secondary">Cancel</button>
+      <button type="button" id="orca-gate-proceed-btn" class="orca-modal-btn orca-btn-primary">Enable &amp; Proceed</button>
+    </div>
+  </div>
+</div>
+
+<footer class="hud-panel" id="bottom-hud">
 <div class="bottom-station-nav" id="bottom-station-nav">
   <div class="bottom-station-header">
     <span class="pulse-icon"></span>
@@ -776,11 +1001,12 @@
        DATA + APPLICATION
        ========================================================= -->
 <script src="ocean_data.js?v=3"></script>
-<script src="cesium-globe.js?v=5"></script>
-<script src="app.js?v=10"></script>
+<script src="cesium-globe.js?v=6"></script>
+<script src="app.js?v=11"></script>
 <script src="orca-live-bridge.js?v=3"></script>
-<script src="orca-navigation.js?v=1"></script>
-<script src="orca-agent.js?v=2"></script>
+<script src="orca-navigation.js?v=4"></script>
+<script src="orca-i18n.js?v=4"></script>
+<script src="orca-agent.js?v=4"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
       const infoBox = document.getElementById("port-weather-info");
@@ -791,7 +1017,13 @@
 
       window.updateCoastalPortWeather = async function (portInfo) {
         if (!portInfo) return;
-        if (elName) elName.textContent = `Loading ${portInfo.name}...`;
+        const trPort = (txt) => (window.ORCA_I18N && typeof window.ORCA_I18N.translatePortText === "function")
+          ? window.ORCA_I18N.translatePortText(txt)
+          : txt;
+        if (elName) {
+          elName.setAttribute("data-orig-port", `${portInfo.name} Live Weather`);
+          elName.textContent = trPort(`${portInfo.name} Live Weather`);
+        }
         if (elTemp) elTemp.textContent = "--";
         if (elWind) elWind.textContent = "--";
         if (elHum) elHum.textContent = "--";
@@ -802,16 +1034,25 @@
           const res = await fetch(url);
           const data = await res.json();
           if (data && data.current) {
-            if (elName) elName.textContent = `${portInfo.name} Live Weather`;
+            if (elName) {
+              elName.setAttribute("data-orig-port", `${portInfo.name} Live Weather`);
+              elName.textContent = trPort(`${portInfo.name} Live Weather`);
+            }
             if (elTemp) elTemp.textContent = `${data.current.temperature_2m} °C`;
             if (elWind) elWind.textContent = `${data.current.wind_speed_10m} km/h`;
             if (elHum) elHum.textContent = `${data.current.relative_humidity_2m} %`;
           } else {
-            if (elName) elName.textContent = `${portInfo.name} Weather`;
+            if (elName) {
+              elName.setAttribute("data-orig-port", `${portInfo.name} Weather`);
+              elName.textContent = trPort(`${portInfo.name} Weather`);
+            }
           }
         } catch (err) {
           console.error("Coastal weather fetch error:", err);
-          if (elName) elName.textContent = `${portInfo.name} Weather`;
+          if (elName) {
+            elName.setAttribute("data-orig-port", `${portInfo.name} Weather`);
+            elName.textContent = trPort(`${portInfo.name} Weather`);
+          }
         }
       };
 

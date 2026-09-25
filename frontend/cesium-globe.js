@@ -831,8 +831,8 @@ viewer = new Cesium.Viewer(container, {
   function fetchAndRenderCoastlines() {
     if (!viewer) return;
 
-    // India National & Peninsular Coastline - Subtle Glowing Warm Amber / Golden Saffron
-    Cesium.GeoJsonDataSource.load("data/india_outline.json", {
+    // Peninsular Coastline (Arabian Sea, Indian Ocean & Bay of Bengal water joint area only — no northern land borders)
+    Cesium.GeoJsonDataSource.load("data/india_outline.json?v=2", {
       stroke: Cesium.Color.fromCssColorString("rgba(251, 191, 36, 0.65)"),
       strokeWidth: 1.8,
       clampToGround: true

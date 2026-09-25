@@ -712,17 +712,21 @@ def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
 async def agent_stt(
     request: Request,
     lang: str = Query("en", description="Language code (en, hi, hinglish, mr, gu, ml, ta, te, kn, bn, pa, or)"),
+    partial: bool = Query(False, description="True when streaming live partial chunks while speaking"),
 ) -> dict:
+    import asyncio
     from . import i18n_service
 
     wav_bytes = await request.body()
     if not wav_bytes or len(wav_bytes) < 100:
         raise HTTPException(status_code=400, detail="Empty audio payload.")
     try:
-        transcript = i18n_service.transcribe_wav_bytes(wav_bytes=wav_bytes, lang=lang)
-        return {"success": True, "transcript": transcript, "language": lang}
+        transcript = await asyncio.to_thread(
+            i18n_service.transcribe_wav_bytes, wav_bytes, lang, partial
+        )
+        return {"success": True, "transcript": transcript, "language": lang, "partial": partial}
     except ValueError as exc:
-        return {"success": False, "transcript": "", "detail": str(exc), "language": lang}
+        return {"success": False, "transcript": "", "detail": str(exc), "language": lang, "partial": partial}
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Speech recognition error: {exc}")
 
