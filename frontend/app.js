@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ==========================================================================
  * ORCA - DEEP OCEAN 3D GLOBE & HEALTH MONITORING SYSTEM
  * ==========================================================================
@@ -97,7 +97,7 @@
     const popMhiEl = document.getElementById("pop-mhi-val");
     const popAdvisoryEl = document.getElementById("popover-advisory");
 
-    if (metaEl) metaEl.textContent = `${name} • Checking...`;
+    if (metaEl) metaEl.textContent = `${name} â€¢ Checking...`;
 
     try {
       const param = isPort ? `port=${encodeURIComponent(name)}` : `lat=${lat.toFixed(3)}&lon=${lon.toFixed(3)}`;
@@ -117,7 +117,7 @@
         const score = data.condition_score ? `${data.condition_score}/100` : "84/100";
         const wind = data.weather?.wind_speed ? `${data.weather.wind_speed} km/h` : "12 km/h";
         if (metaEl) {
-          metaEl.textContent = `${name} • ${score} • ${wind}`.trim();
+          metaEl.textContent = `${name} â€¢ ${score} â€¢ ${wind}`.trim();
         }
         if (tagEl) {
           tagEl.textContent = "LIVE";
@@ -160,7 +160,7 @@
       statusEl.textContent = condStatus;
       statusEl.className = "sea-ind-status " + (health >= 78 ? "safe" : (health >= 65 ? "moderate" : "caution"));
     }
-    if (metaEl) metaEl.textContent = `${name} • ${health}/100 • ${windSpeed} km/h`;
+    if (metaEl) metaEl.textContent = `${name} â€¢ ${health}/100 â€¢ ${windSpeed} km/h`;
     if (tagEl) {
       tagEl.textContent = "LIVE";
       tagEl.className = "sea-ind-tag";
@@ -263,7 +263,7 @@
 
       name: "Water Temperature (SST)",
 
-      unit: "°C",
+      unit: "Â°C",
 
       min: 27.5,
 
@@ -359,7 +359,7 @@
 
       name: "Fish Food Level (Plankton / Chl-a)",
 
-      unit: "mg/m³",
+      unit: "mg/mÂ³",
 
       min: 0.2,
 
@@ -469,7 +469,10 @@
       document.getElementById("tooltip-header"),
 
     tooltipBody:
-      document.getElementById("tooltip-body")
+      document.getElementById("tooltip-body"),
+
+    btnAskOrca:
+      document.getElementById("btn-ask-orca")
 
   };
 
@@ -641,7 +644,7 @@
       if (stats.length >= 4) {
 
         stats[2].textContent =
-          `${data.metricsSummary.avgTemp} °C`;
+          `${data.metricsSummary.avgTemp} Â°C`;
 
         stats[3].textContent =
           `${data.metricsSummary.avgDO} mg/L`;
@@ -2329,7 +2332,7 @@
   function isInsideEEZ(lat, lon) {
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
     if (lat < 7.0 || lat > 24.5 || lon < 65.0 || lon > 78.5) return false;
-    // Northwest boundary line from (19.0°N, 72.5°E) to (23.5°N, 68.0°E)
+    // Northwest boundary line from (19.0Â°N, 72.5Â°E) to (23.5Â°N, 68.0Â°E)
     if (lat >= 19.0) {
       const minLon = 68.0 + (23.5 - lat) * (72.5 - 68.0) / (23.5 - 19.0);
       if (lon < minLon) return false;
@@ -2362,7 +2365,7 @@
 
       const portIcon = L.divIcon({
         className: "orca-leaflet-pill-container",
-        html: `<div class="${badgeClass}"><span class="${anchorClass}">⚓</span><span>${port.name}</span></div>`,
+        html: `<div class="${badgeClass}"><span class="${anchorClass}">âš“</span><span>${port.name}</span></div>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0]
       });
@@ -2375,11 +2378,11 @@
       marker.bindPopup(`
         <div style="font-family: var(--font-sans); color: #e2e8f0; min-width: 180px;">
           <div style="font-size: 13px; font-weight: 700; color: #00f5d4; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-            <span>⚓</span> <span>${port.name}</span>
+            <span>âš“</span> <span>${port.name}</span>
           </div>
           <div style="font-size: 11px; color: #94a3b8; line-height: 1.5;">
             <div>Classification: <span style="color: ${isMajor ? '#00f5d4' : '#a8d5db'}; font-weight: 600;">${isMajor ? 'Major Maritime Gateway' : 'Coastal Feeder / Fishing Port'}</span></div>
-            <div>Coordinates: <span style="color: #cbd5e1;">${port.lat.toFixed(2)}°N, ${port.lon.toFixed(2)}°E</span></div>
+            <div>Coordinates: <span style="color: #cbd5e1;">${port.lat.toFixed(2)}Â°N, ${port.lon.toFixed(2)}Â°E</span></div>
             <div>Status: <span style="color: #00f5d4; font-weight: 600;">Operational Marine Node</span></div>
           </div>
         </div>
@@ -2504,7 +2507,7 @@
     }
 
     const distKm = calcKm(oLat, oLon, dLat, dLon);
-    console.log(`[ORCA ROUTE]\nORIGIN: ${oLat.toFixed(3)}°N, ${oLon.toFixed(3)}°E\nDESTINATION: ${dLat.toFixed(3)}°N, ${dLon.toFixed(3)}°E\nDISTANCE: ${distKm.toFixed(1)} km`);
+    console.log(`[ORCA ROUTE]\nORIGIN: ${oLat.toFixed(3)}Â°N, ${oLon.toFixed(3)}Â°E\nDESTINATION: ${dLat.toFixed(3)}Â°N, ${dLon.toFixed(3)}Â°E\nDISTANCE: ${distKm.toFixed(1)} km`);
 
     activeLeafletRoute = L.polyline(
       [
@@ -2597,13 +2600,13 @@
         marker.bindPopup(`
           <div style="font-family: var(--font-sans); min-width: 240px; color: #f0f6fc;">
             <div style="font-size: 12.5px; font-weight: 600; color: #38bdf8; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">
-              <span>🐟 ${station.name || 'Fishing Zone'}</span>
+              <span>ðŸŸ ${station.name || 'Fishing Zone'}</span>
               <span style="color: ${sColor}; font-size: 9.5px; font-weight: 700; background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.25); padding: 2px 6px; border-radius: 4px;">${tierLabel}</span>
             </div>
             <div style="font-size: 11px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
-              <div>Location: <b style="font-family: var(--font-mono); color: #f0f6fc;">${station.lat.toFixed(2)}°N, ${station.lon.toFixed(2)}°E</b></div>
+              <div>Location: <b style="font-family: var(--font-mono); color: #f0f6fc;">${station.lat.toFixed(2)}Â°N, ${station.lon.toFixed(2)}Â°E</b></div>
               <div>Suitability Score: <b>${suitability}/100</b> | SLA: <b>${station.sla_text || '+8 cm'}</b></div>
-              <div>SST: <b>${station.sst ? station.sst.toFixed(1) : '--'}°C</b> | Chl-a: <b>${station.chlorophyll ? station.chlorophyll.toFixed(2) : '--'} mg/m³</b></div>
+              <div>SST: <b>${station.sst ? station.sst.toFixed(1) : '--'}Â°C</b> | Chl-a: <b>${station.chlorophyll ? station.chlorophyll.toFixed(2) : '--'} mg/mÂ³</b></div>
               <div>Marine Health: <b style="color: ${station.healthScore >= 55 ? '#34d399' : '#fbbf24'};">${station.healthScore ? station.healthScore.toFixed(0) : '75'}/100</b> | Salinity: <b>${station.salinity ? station.salinity.toFixed(1) : '35.5'} PSU</b></div>
               <div style="margin-top: 3px; font-size: 10.5px; color: #94a3b8;">Target Catch: <b style="color: #e2e8f0;">${speciesList}</b></div>
             </div>
@@ -2645,7 +2648,7 @@
         circle.bindTooltip(
           `<strong>${station.name || 'VO-Cell'}</strong><br/>
            ${metricConf.name}: ${metricConf.getVal(station)} ${metricConf.unit}<br/>
-           Health: ${station.healthScore ? station.healthScore.toFixed(0) : '--'}/100 | SST: ${station.sst ? station.sst.toFixed(1) + '°C' : '--'} | SLA: ${station.sla_text || '+8 cm'}`,
+           Health: ${station.healthScore ? station.healthScore.toFixed(0) : '--'}/100 | SST: ${station.sst ? station.sst.toFixed(1) + 'Â°C' : '--'} | SLA: ${station.sla_text || '+8 cm'}`,
           {
             className: "leaflet-dark-tooltip",
             sticky: true
@@ -2678,7 +2681,7 @@
 
     // The PFZ dialog should only pop up when the user actually clicks a
     // station on the globe/map, not for the default station selected on
-    // page load — it was previously showing unconditionally, which meant
+    // page load â€” it was previously showing unconditionally, which meant
     // it popped open over the globe immediately on every load.
     const {
       showPfzDialog = false
@@ -2801,7 +2804,7 @@
 
     if (coords)
       coords.textContent =
-        `${s.lat.toFixed(2)}°N, ${s.lon.toFixed(2)}°E`;
+        `${s.lat.toFixed(2)}Â°N, ${s.lon.toFixed(2)}Â°E`;
 
 
     if (depth)
@@ -2836,7 +2839,7 @@
       sstaVal,
       -2,
       2,
-      sstaVal != null ? `${sstaVal > 0 ? '+' : ''}${Number(sstaVal).toFixed(2)} °C` : "Not supplied",
+      sstaVal != null ? `${sstaVal > 0 ? '+' : ''}${Number(sstaVal).toFixed(2)} Â°C` : "Not supplied",
       sstaVal != null && sstaVal > 0 ? "#ef476f" : "#00f5d4"
     );
 
@@ -2846,7 +2849,7 @@
       s.sst,
       25,
       33,
-      s.sst != null ? `${Number(s.sst).toFixed(1)} °C` : "Not supplied",
+      s.sst != null ? `${Number(s.sst).toFixed(1)} Â°C` : "Not supplied",
       s.sst != null && s.sst > 30
         ? "#ffd166"
         : "#00b4d8"
@@ -2880,7 +2883,7 @@
       s.chlorophyll,
       0,
       2.0,
-      s.chlorophyll != null ? `${Number(s.chlorophyll).toFixed(2)} mg/m³` : "Not supplied",
+      s.chlorophyll != null ? `${Number(s.chlorophyll).toFixed(2)} mg/mÂ³` : "Not supplied",
       "#a7c957"
     );
 
@@ -3247,7 +3250,7 @@
               ? Number(mhiTrendData.activeStation.healthScore).toFixed(1)
               : null;
           const stInfo = stScore !== null ? ` | Stn: ${stScore}` : "";
-          tooltip.innerHTML = `<strong>${label}</strong> • <span>${val}/100</span> (${desc})${stInfo}`;
+          tooltip.innerHTML = `<strong>${label}</strong> â€¢ <span>${val}/100</span> (${desc})${stInfo}`;
           tooltip.style.display = "block";
         }
       });
@@ -3447,7 +3450,7 @@
 
 
     /*
-     * Cesium 3D globe markers (this is the default globe — without this,
+     * Cesium 3D globe markers (this is the default globe â€” without this,
      * the metric buttons only updated the legend text and silently did
      * nothing to the actual globe, since Cesium markers were only ever
      * colored once, by health, at creation time)
@@ -3638,7 +3641,7 @@
 
 
       dom.btnSound.innerHTML =
-        "🔊 Sound: Active";
+        "ðŸ”Š Sound: Active";
 
     } else {
 
@@ -3655,7 +3658,7 @@
 
 
       dom.btnSound.innerHTML =
-        "🔈 Sound: Muted";
+        "ðŸ”ˆ Sound: Muted";
 
     }
 
@@ -4188,7 +4191,7 @@
 
 
             /*
-             * Cesium 3D globe markers — same gap as the metric colors
+             * Cesium 3D globe markers â€” same gap as the metric colors
              * above, the filter previously never touched the default
              * Cesium globe at all.
              */
@@ -4578,7 +4581,7 @@
 
               Temp:
               ${st.sst}
-              °C
+              Â°C
 
               |
 
@@ -4775,26 +4778,26 @@
     if (healthBadge) healthBadge.textContent = `${payload.health.index} / 100 ${payload.health.state}`;
     const topStats = document.querySelectorAll(".top-stats .stat-item .stat-value");
     if (topStats.length >= 4) {
-      topStats[2].textContent = metrics.sst.available ? `${metrics.sst.value} °C` : "SST unavailable";
+      topStats[2].textContent = metrics.sst.available ? `${metrics.sst.value} Â°C` : "SST unavailable";
       topStats[3].textContent = payload.station_telemetry.current_speed !== null ? `${payload.station_telemetry.current_speed} m/s` : "Current unavailable";
       topStats[3].parentElement.querySelector(".stat-label").textContent = "Surface Current";
     }
     const inspName = document.getElementById("inspector-name");
     if (inspName) {
         inspName.textContent = `${payload.station.name} Forecast`;
-        document.getElementById("inspector-id").textContent = `ORCA · ${payload.forecast_time || "forecast time unavailable"}`;
-        document.getElementById("inspector-coords").textContent = `${Number(payload.station.lat).toFixed(2)}°N, ${Number(payload.station.lon).toFixed(2)}°E`;
+        document.getElementById("inspector-id").textContent = `ORCA Â· ${payload.forecast_time || "forecast time unavailable"}`;
+        document.getElementById("inspector-coords").textContent = `${Number(payload.station.lat).toFixed(2)}Â°N, ${Number(payload.station.lon).toFixed(2)}Â°E`;
         document.getElementById("inspector-depth").textContent = "Surface forecast";
         const status = document.getElementById("inspector-status");
         status.textContent = payload.health.state;
         status.style.backgroundColor = "#00f5d422";
         status.style.color = "#00f5d4";
         status.style.border = "1px solid #00f5d4";
-        setLiveMeter("meter-thetao-anom", { available: payload.station_telemetry.thetao_anom !== null, value: payload.station_telemetry.thetao_anom, unit: "°C" }, -2, 2, "#00f5d4");
+        setLiveMeter("meter-thetao-anom", { available: payload.station_telemetry.thetao_anom !== null, value: payload.station_telemetry.thetao_anom, unit: "Â°C" }, -2, 2, "#00f5d4");
         setLiveMeter("meter-temp", metrics.sst, 25, 33, "#00b4d8");
         setLiveMeter("meter-sla-anom", { available: payload.station_telemetry.sla_anom !== null, value: payload.station_telemetry.sla_anom, unit: "m" }, -0.5, 0.5, "#00f5d4");
         setLiveMeter("meter-so-anom", { available: payload.station_telemetry.so_anom !== null, value: payload.station_telemetry.so_anom, unit: "PSU" }, -5, 2, "#0077b6");
-        setLiveMeter("meter-log-chl", { available: payload.station_telemetry.chlorophyll !== null, value: payload.station_telemetry.chlorophyll, unit: "mg/m³" }, 0, 8, "#a7c957");
+        setLiveMeter("meter-log-chl", { available: payload.station_telemetry.chlorophyll !== null, value: payload.station_telemetry.chlorophyll, unit: "mg/mÂ³" }, 0, 8, "#a7c957");
         const sparkState = document.querySelector(".sparkline-header .stable-text");
         if (sparkState) sparkState.textContent = "FORECAST";
     }
@@ -4828,7 +4831,7 @@
     const elChl = document.getElementById("head-chl");
     if (elChl) {
         const chl = payload.station_telemetry.chlorophyll;
-        elChl.textContent = chl !== null ? `${chl} mg/m³` : "--";
+        elChl.textContent = chl !== null ? `${chl} mg/mÂ³` : "--";
     }
 
     // Sea Level Anomaly

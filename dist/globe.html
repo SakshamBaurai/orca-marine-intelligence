@@ -111,6 +111,10 @@
 </svg>
         Orbit: Off
       </button>
+<button class="hud-btn hud-btn-primary" id="btn-ask-orca" title="Open ORCA Marine Intelligence Command">
+  <span class="orca-btn-dot"></span>
+  <span class="orca-btn-text">ASK ORCA</span>
+</button>
 <button class="hud-btn" id="btn-data-key" title="Open Oceanographic Data Key &amp; Metric Legend">
   <span style="font-size: 13px; margin-right: 3px;">ℹ️</span>
   <span>DATA KEY</span>
@@ -513,7 +517,154 @@
     <span>✕</span> Clear Active Route
   </button>
 </div>
-</aside><footer class="hud-panel" id="bottom-hud">
+</aside>
+
+<!-- =========================================================
+     ORCA AI DRAWER (side panel chat widget)
+     ========================================================= -->
+<div class="hud-panel orca-ai-drawer" id="orca-ai-widget">
+  <div class="ai-drawer-header">
+    <div class="ai-header-brand">
+      <span class="ai-avatar">🐋</span>
+      <span class="ai-title">ORCA COGNITIVE AGENT</span>
+      <span class="rag-badge live-model-badge" id="ai-status-badge">TOOL-CALLING AI</span>
+    </div>
+    <div class="ai-header-actions">
+      <button type="button" class="ai-drawer-btn" id="ai-drawer-toggle" title="Collapse / Expand Agent Drawer">▼</button>
+    </div>
+  </div>
+  <div class="ai-drawer-body" id="ai-drawer-body">
+    <div class="ai-quick-chips" id="ai-quick-chips">
+      <button type="button" class="ai-chip" data-query="Where is the best fishing spot right now?">🎯 Best Fishing Spot</button>
+      <button type="button" class="ai-chip" data-query="What is the sea surface temperature at Kandla?">🌡️ Kandla SST</button>
+      <button type="button" class="ai-chip" data-query="Are there any active upwelling fronts?">🌊 Active Upwelling</button>
+      <button type="button" class="ai-chip" data-query="What is the marine health index here?">🩺 Marine Health</button>
+      <button type="button" class="ai-chip" data-query="Switch to 2D navigation map">🗺️ Switch to 2D</button>
+    </div>
+    <div class="ai-chat-history" id="ai-chat-history">
+      <div class="orca-message ai-bot-msg">
+        <div class="ai-sender"><span class="ai-avatar-mini">🐋</span> ORCA Tool-Calling Agent</div>
+        <div class="ai-content">
+          Operational. Connected to Copernicus CMEMS, Open-Meteo live atmospheric telemetry, and Isolation Forest ocean anomaly detectors. Ask me about ocean physics, thermal upwelling, potential fishing zones (PFZ), or coastal ports.
+        </div>
+      </div>
+    </div>
+    <form class="ai-chat-form" id="ai-chat-form">
+      <input autocomplete="off" id="ai-chat-input" placeholder="Ask about ocean physics, fishing spots, ports..." type="text"/>
+      <button type="submit" id="ai-submit-btn" title="Send query">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Floating launcher button when drawer is minimized -->
+<button type="button" id="orca-ai-launcher" class="orca-ai-launcher-btn" style="display: none;">
+  <span class="ai-launcher-dot"></span>⚡ ORCA AI
+</button>
+
+<!-- =========================================================
+     ORCA FULLSCREEN AI COMMAND WORKSPACE
+     ========================================================= -->
+<div id="orca-ai-workspace" class="orca-ai-workspace">
+  <div class="workspace-backdrop" id="workspace-backdrop"></div>
+  <div class="workspace-container">
+    <div class="workspace-header">
+      <div class="workspace-header-brand">
+        <div class="workspace-pill-badge"><span class="pulse-cyan-dot"></span> ORCA INTELLIGENCE COMMAND</div>
+        <h2 class="workspace-title">Marine Intelligence &amp; Autonomous Navigation Layer</h2>
+      </div>
+      <button type="button" class="workspace-close-btn" id="workspace-close-btn" title="Return to Globe (Esc)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Return to Globe</span>
+      </button>
+    </div>
+
+    <!-- Suggested Questions -->
+    <div class="workspace-prompts-section">
+      <div class="prompts-label">SUGGESTED COMMANDS</div>
+      <div class="workspace-prompt-chips" id="workspace-quick-chips">
+        <button type="button" class="prompt-chip" data-query="What are the best fishing spots from Mumbai?">🎯 Best fishing spots from Mumbai</button>
+        <button type="button" class="prompt-chip" data-query="Show nearby fishing zones">🐟 Find nearby fishing zones</button>
+        <button type="button" class="prompt-chip" data-query="Find the healthiest zone">🩺 Find the healthiest zone</button>
+        <button type="button" class="prompt-chip" data-query="Calculate distance from Mumbai Port">📏 Distance from Mumbai Port</button>
+        <button type="button" class="prompt-chip" data-query="What is the 12 NM regulatory boundary?">⚖️ 12 NM regulatory boundary</button>
+        <button type="button" class="prompt-chip" data-query="What is the weather in Mumbai?">🌦️ Mumbai coastal weather</button>
+      </div>
+    </div>
+
+    <!-- Message & Intelligence Card Stream -->
+    <div class="workspace-stream" id="workspace-stream">
+      <div class="workspace-msg workspace-msg-bot">
+        <div class="workspace-msg-sender">
+          <span class="workspace-avatar">🐋</span>
+          <span class="sender-name">ORCA Marine Intelligence</span>
+          <span class="verified-tag">12 NM BOUNDARY HARD FILTER ACTIVE</span>
+        </div>
+        <div class="workspace-msg-content">
+          Operational. Directly coupled to Copernicus Marine Service (CMEMS) numerical models, Sentinel-3 satellite ocean color arrays, and the Maritime Zones of India regulatory boundary.<br/><br/>
+          Ask natural-language queries about fishing grounds, departure routes, coastal ports, or marine ecosystem health.
+        </div>
+      </div>
+    </div>
+
+    <!-- Contextual Loading Progress State -->
+    <div class="workspace-progress" id="workspace-progress" style="display: none;">
+      <div class="workspace-progress-track"><div class="workspace-progress-bar" id="workspace-progress-bar"></div></div>
+      <div class="workspace-progress-status" id="workspace-progress-status">ORCA is analyzing marine conditions...</div>
+    </div>
+
+    <!-- Command Input Bar -->
+    <form class="workspace-form" id="workspace-form">
+      <div class="workspace-input-row">
+        <input type="text" id="workspace-query-input" autocomplete="off" placeholder="What would you like to know? e.g. Where should I fish from Mumbai?" />
+        <button type="submit" id="workspace-submit" title="Send query to ORCA">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+      <div class="workspace-form-footer">
+        <label class="toggle-globe-label" title="When enabled, geographic results immediately update 3D camera and route">
+          <input type="checkbox" id="toggle-show-globe" checked />
+          <span class="custom-chk"></span>
+          <span>Show result on Globe</span>
+        </label>
+        <div class="workspace-disclaimer">Zero hallucinations • Copernicus CMEMS physical forecast • 12 NM regulated</div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================
+     SHOW RESULT ON GLOBE REQUIRED MODAL
+     ========================================================= -->
+<div id="orca-globe-gate-modal" class="orca-modal-backdrop" style="display: none;">
+  <div class="orca-modal-panel">
+    <div class="orca-modal-header">
+      <div class="orca-modal-title">
+        <span class="orca-modal-icon">🌐</span>
+        <span>Enable Globe Navigation</span>
+      </div>
+      <button type="button" id="orca-gate-modal-close" class="orca-modal-close">×</button>
+    </div>
+    <div class="orca-modal-body">
+      <p class="orca-modal-text">
+        To navigate to this fishing zone, plot sea routes, and view real-time 3D telemetry, please enable the <strong>"Show result on Globe"</strong> option.
+      </p>
+      <div class="orca-gate-checkbox-prompt">
+        <label class="toggle-globe-label">
+          <input type="checkbox" id="gate-confirm-checkbox" />
+          <span>Enable "Show result on Globe"</span>
+        </label>
+      </div>
+    </div>
+    <div class="orca-modal-footer">
+      <button type="button" id="orca-gate-cancel-btn" class="orca-modal-btn orca-btn-secondary">Cancel</button>
+      <button type="button" id="orca-gate-proceed-btn" class="orca-modal-btn orca-btn-primary">Enable &amp; Proceed</button>
+    </div>
+  </div>
+</div>
+
+<footer class="hud-panel" id="bottom-hud">
 <div class="bottom-station-nav" id="bottom-station-nav">
   <div class="bottom-station-header">
     <span class="pulse-icon"></span>
