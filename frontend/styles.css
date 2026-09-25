@@ -3111,6 +3111,185 @@ input:checked + .toggle-slider:before {
   padding: 1px 6px;
 }
 
+/* =========================================================================
+   ORCA MULTILINGUAL (i18n) SWITCHER & VOICE INTERACTION CONTROLS
+   ========================================================================= */
+
+.orca-lang-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(13, 26, 45, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  border-radius: 6px;
+  padding: 3px 8px;
+  height: 28px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.orca-lang-switcher:hover,
+.orca-lang-switcher:focus-within {
+  border-color: rgba(56, 189, 248, 0.7);
+  background: rgba(20, 39, 66, 0.95);
+}
+
+.orca-lang-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.orca-lang-select {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding-right: 4px;
+}
+
+.orca-lang-select option {
+  background: #0b1524;
+  color: #f8fafc;
+  font-size: 12px;
+  padding: 6px;
+}
+
+/* Microphone Button inside Ask ORCA */
+.workspace-input-row button.orca-mic-btn,
+.ai-chat-form button.orca-mic-btn {
+  width: auto !important;
+  min-width: 64px;
+  height: 36px;
+  padding: 0 11px;
+  margin-right: 4px;
+  border-radius: 6px;
+  background: rgba(15, 30, 52, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ai-chat-form button.orca-mic-btn {
+  height: 32px;
+  min-width: 54px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.workspace-input-row button.orca-mic-btn:hover,
+.ai-chat-form button.orca-mic-btn:hover {
+  background: rgba(23, 44, 73, 1);
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.orca-mic-btn.listening {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: #ef4444 !important;
+  color: #fca5a5 !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
+  animation: orcaMicPulse 1.2s infinite ease-in-out;
+}
+
+.orca-mic-btn.processing {
+  background: rgba(245, 158, 11, 0.2) !important;
+  border-color: #f59e0b !important;
+  color: #fde68a !important;
+}
+
+.orca-mic-btn.error {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  color: #f87171 !important;
+}
+
+@keyframes orcaMicPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(239, 68, 68, 0.35); }
+  50% { transform: scale(1.03); box-shadow: 0 0 16px rgba(239, 68, 68, 0.7); }
+}
+
+/* Voice Status Feedback Banner */
+.orca-voice-status {
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: rgba(15, 28, 46, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.orca-voice-status.status-listening {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(69, 15, 24, 0.55);
+  color: #fca5a5;
+}
+
+.orca-voice-status.status-processing {
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fcd34d;
+}
+
+.orca-voice-status.status-error {
+  border-color: rgba(248, 113, 113, 0.5);
+  background: rgba(69, 15, 24, 0.6);
+  color: #fca5a5;
+}
+
+/* Speak Answer Button on ORCA Responses */
+.orca-speak-btn {
+  margin-left: auto;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  color: #38bdf8;
+  border-radius: 5px;
+  padding: 3px 9px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.orca-speak-btn:hover {
+  background: rgba(56, 189, 248, 0.22);
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.orca-speak-btn.speaking {
+  background: rgba(0, 245, 212, 0.18);
+  border-color: #00f5d4;
+  color: #00f5d4;
+  box-shadow: 0 0 10px rgba(0, 245, 212, 0.3);
+}
+
+.ai-sender {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+
 
 
 

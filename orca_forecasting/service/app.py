@@ -666,21 +666,36 @@ def get_agent() -> ORCAAgent:
 @app.post("/api/v1/agent/chat", response_model=AgentChatResponse)
 @app.post("/agent/chat", response_model=AgentChatResponse)
 def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
+    from . import i18n_service
+
     agent = get_agent()
     ctx_dict = (
         req.context.model_dump()
         if (req.context and hasattr(req.context, "model_dump"))
         else (req.context.dict() if req.context else None)
     )
+
+    # 1. Translate/normalize query from selected or detected language into canonical English
+    english_query, effective_lang = i18n_service.translate_query_to_english(
+        req.message, requested_lang=req.language or "en"
+    )
+
+    # 2. Run existing ORCA intelligence & RAG pipeline untouched
     result = agent.process_query(
-        query=req.message,
+        query=english_query,
         context=ctx_dict,
         session_id=req.session_id or "default",
     )
+
+    # 3. Translate response message & cards back into effective language if non-English
+    if effective_lang and effective_lang != "en":
+        result = i18n_service.translate_agent_response(result, target_lang=effective_lang)
+
     return AgentChatResponse(
         session_id=result["session_id"],
         message=result["message"],
         reply=result["message"],
+        language=effective_lang or "en",
         data=result.get("data", []),
         actions=result.get("actions", []),
         tool_calls=[],
@@ -688,6 +703,33 @@ def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
         selected_spot_index=result.get("selected_spot_index", 0),
         origin_port=result.get("origin_port"),
     )
+
+
+@app.get("/api/v1/agent/tts")
+@app.get("/agent/tts")
+def agent_tts(
+    text: str = Query(..., description="Text to synthesize into speech"),
+    lang: str = Query("en", description="Language code (en, hi, mr, gu, ml, ta, te, kn, bn, pa, or)"),
+):
+    from fastapi.responses import Response
+    from . import i18n_service
+
+    mp3_bytes = i18n_service.synthesize_speech_mp3(text=text, lang=lang)
+    if not mp3_bytes:
+        raise HTTPException(status_code=503, detail="Text-to-speech synthesis unavailable for the requested text/language.")
+    return Response(content=mp3_bytes, media_type="audio/mpeg")
+
+
+@app.post("/api/v1/i18n/translate")
+def translate_batch_endpoint(payload: dict) -> dict:
+    from . import i18n_service
+
+    target_lang = str(payload.get("target_lang", "en")).strip().lower()
+    texts = payload.get("texts", [])
+    if not isinstance(texts, list):
+        raise HTTPException(status_code=422, detail="'texts' must be a list of strings.")
+    translated = [i18n_service.translate_text(str(t), target_lang) for t in texts]
+    return {"target_lang": target_lang, "translations": translated}
 
 
 @app.get("/api/v1/sea-conditions")
@@ -699,4 +741,5 @@ def get_sea_conditions_endpoint(
 ):
     from orca_forecasting.service import agent_tools
     return agent_tools.get_sea_conditions(lat=lat, lon=lon, port_name=port)
+
 

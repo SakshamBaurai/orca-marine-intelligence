@@ -141,6 +141,7 @@ class ChatContext(BaseModel):
 class AgentChatRequest(BaseModel):
     message: str = Field(..., description="User query for the ORCA agent")
     session_id: Optional[str] = Field("default", description="Session ID for conversational state")
+    language: Optional[str] = Field("en", description="Selected language code (en, hi, mr, gu, ml, ta, te, kn, bn, pa, or)")
     context: Optional[ChatContext] = Field(default=None, description="Current frontend view/location context")
 
 
@@ -166,6 +167,7 @@ class AgentChatResponse(BaseModel):
     session_id: str
     message: str = Field(..., description="Response message from the agent")
     reply: Optional[str] = Field(None, description="Alias for message")
+    language: Optional[str] = Field("en", description="Language code of the returned response")
     data: List[Dict[str, Any]] = Field(default_factory=list, description="Structured scientific data cards")
     actions: List[Dict[str, Any]] = Field(default_factory=list, description="Whitelisted safe UI actions")
     tool_calls: List[Dict[str, Any]] = Field(default_factory=list, description="Executed scientific tools")
